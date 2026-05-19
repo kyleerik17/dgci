@@ -1,0 +1,13 @@
+// === STATS ===
+function setPeriod(p,btn){statPeriod=p;document.querySelectorAll('.ptab').forEach(function(b){b.classList.remove('active')});btn.classList.add('active');renderStats()}
+function renderStats(){
+  var arr=filterP(voyages,statPeriod),grid=document.getElementById('charts-grid'),
+      byM={},byD={},byMat={},byT={'10 Roues':0,'12 Roues':0,'Semi-Remorque':0};
+  arr.forEach(function(v){if(v.marchandise)byM[v.marchandise]=(byM[v.marchandise]||0)+1;if(v.destination)byD[v.destination]=(byD[v.destination]||0)+1;if(v.matricule)byMat[v.matricule]=(byMat[v.matricule]||0)+1;if(byT[v.type]!==undefined)byT[v.type]++});
+  function top(o,n){n=n||6;return Object.entries(o).sort(function(a,b){return b[1]-a[1]}).slice(0,n)}
+  var livres=arr.filter(function(v){return v.statut==='Livré'}).length;
+  var ca=arr.filter(function(v){return v.statut==='Livré'}).reduce(function(a,v){return a+totalVoyage(v)},0);
+  var tons=arr.reduce(function(a,v){return a+Number(v.tonnage||0)},0);
+  function bar(title,data,color){var max=data[0]?data[0][1]:1;return'<div class="chart-card"><div class="chart-ttl">'+title+'</div>'+(data.length?data.map(function(item){return'<div class="bar-row"><div class="bar-lbl" title="'+item[0]+'">'+item[0]+'</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(item[1]/max*100)+'%;background:'+color+'"></div></div><div class="bar-n">'+item[1]+'</div></div>'}).join(''):'<div style="color:var(--text-muted);font-size:11px">Aucune donnée</div>')+'</div>'}
+  grid.innerHTML='<div class="chart-card"><div class="chart-ttl">Résumé</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Voyages</div><div style="font-size:28px;font-weight:700;color:var(--text-primary)">'+arr.length+'</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Livrés</div><div style="font-size:28px;font-weight:700;color:var(--success)">'+livres+'</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Tonnage</div><div style="font-size:20px;font-weight:600;color:var(--text-secondary)">'+tons.toFixed(1)+' t</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">CA livré</div><div style="font-size:18px;font-weight:700;color:var(--accent)">'+fmtCompactFCFA(ca)+'</div></div></div></div>'+bar('Marchandises',top(byM),'var(--accent)')+bar('Destinations',top(byD),'var(--accent)')+bar('Camions',top(byMat),'var(--accent)')+bar('Types',Object.entries(byT),'var(--accent)');
+}

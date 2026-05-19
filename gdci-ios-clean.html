@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>GDCI — Registre Transport</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* FIX iOS: safe area insets pour iPhone avec notch/Dynamic Island */
+:root{
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  --bg:#f8fafc;--surface:#ffffff;--surface-alt:#f1f5f9;
+  --border:#e2e8f0;--border-strong:#cbd5e1;
+  --text-primary:#0f172a;--text-secondary:#64748b;--text-muted:#94a3b8;
+  --accent:#3b82f6;--accent-hover:#2563eb;--accent-light:#dbeafe;
+  --success:#10b981;--warning:#f59e0b;--danger:#ef4444;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.05);
+  --shadow-md:0 4px 6px -1px rgba(15,23,42,.08),0 2px 4px -2px rgba(15,23,42,.05);
+  --shadow-lg:0 10px 15px -3px rgba(15,23,42,.08),0 4px 6px -4px rgba(15,23,42,.04);
+  --radius-sm:6px;--radius-md:10px;--radius-lg:14px;--radius-xl:18px;
+  --font-sans:'Inter',system-ui,-apple-system,sans-serif;
+  --font-mono:'DM Mono',monospace;
+  --header-h:68px;--nav-h:56px;
+  --toast-bg:#1e293b;--toast-text:#f8fafc;
+  --notification-bg:#ffffff;--notification-border:#e2e8f0;
+  --notification-hover:#f8fafc;
+}
+
+[data-theme="dark"]{
+  --bg:#0f172a;--surface:#1e293b;--surface-alt:#334155;
+  --border:#334155;--border-strong:#475569;
+  --text-primary:#f8fafc;--text-secondary:#cbd5e1;--text-muted:#94a3b8;
+  --accent:#60a5fa;--accent-hover:#3b82f6;--accent-light:#1e3a5f;
+  --success:#34d399;--warning:#fbbf24;--danger:#f87171;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+  --shadow-md:0 4px 6px -1px rgba(0,0,0,.4),0 2px 4px -2px rgba(0,0,0,.3);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,.5),0 4px 6px -4px rgba(0,0,0,.4);
+  --toast-bg:#334155;--toast-text:#f1f5f9;
+  --notification-bg:#1e293b;--notification-border:#334155;
+  --notification-hover:#334155;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+/* FIX iOS: empêcher le zoom sur les inputs (font-size >= 16px) */
+input, select, textarea {font-size:16px!important}
+
+body{
+  color:var(--text-primary);
+  font-family:var(--font-sans);
+  min-height:100vh;
+  background:var(--bg);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  transition:background .3s ease,color .3s ease;
+  /* FIX iOS: padding-top inclut la safe area pour le notch */
+  padding-top:calc(var(--header-h) + var(--safe-top) + var(--nav-h) + 8px);
+  padding-bottom:var(--safe-bottom);
+  padding-left:var(--safe-left);
+  padding-right:var(--safe-right);
+}
+
+/* Header */
+header{
+  height:calc(var(--header-h) + var(--safe-top));
+  padding:var(--safe-top) 16px 0;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:-webkit-flex;
+  display:flex;
+  -webkit-align-items:flex-end;
+  align-items:flex-end;
+  -webkit-justify-content:space-between;
+  justify-content:space-between;
+  padding-bottom:10px;
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  box-shadow:var(--shadow-sm);
+  transition:background .3s ease,border-color .3s ease;
+  /* FIX iOS: pas de backdrop-filter sur header (cause bugs Safari) */
+}
+.brand{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:12px}
+.brand-icon{
+  width:36px;height:36px;border-radius:var(--radius-sm);
+  display:-webkit-flex;display:flex;
+  -webkit-align-items:center;align-items:center;
+  -webkit-justify-content:center;justify-content:center;
+  font-weight:700;font-size:13px;letter-spacing:1px;color:#fff;background:var(--accent);box-shadow:var(--shadow-sm)
+}
+.brand-name{font-size:18px;font-weight:700;letter-spacing:-0.5px;color:var(--text-primary)}
+.brand-sub{font-size:10px;color:var(--text-secondary);font-weight:500;letter-spacing:0.5px;display:none}
+.header-actions{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:8px}
+.header-stats{display:-webkit-flex;display:flex;gap:12px;-webkit-align-items:center;align-items:center}
+.hstat{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;padding:4px 10px;background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.hstat-val{font-size:16px;font-weight:700;color:var(--text-primary);line-height:1}
+.hstat-lbl{font-size:9px;color:var(--text-secondary);font-weight:500;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px}
+.sync{font-size:10px;color:var(--text-muted);font-weight:500;margin-right:8px;display:none}
+
+.icon-btn-header{
+  background:var(--surface-alt);border:1px solid var(--border);color:var(--text-secondary);
+  border-radius:var(--radius-sm);padding:8px;width:36px;height:36px;cursor:pointer;
+  font-size:14px;
+  display:-webkit-flex;display:flex;
+  -webkit-align-items:center;align-items:center;
+  -webkit-justify-content:center;justify-content:center;
+  transition:all .2s ease;position:relative;
+  /* FIX iOS: min touch target 44px */
+  min-width:44px;min-height:44px;
+}
+.icon-btn-header:hover{border-color:var(--border-strong);color:var(--text-primary);background:var(--surface)}
+.icon-btn-header .badge{
+  position:absolute;top:4px;right:4px;background:var(--danger);color:#fff;
+  font-size:9px;font-weight:700;padding:2px 5px;border-radius:99px;min-width:18px;text-align:center
+}
+
+.notification-dropdown{
+  position:absolute;top:calc(100% + 8px);right:0;width:320px;max-height:400px;
+  background:var(--notification-bg);border:1px solid var(--notification-border);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);z-index:60;
+  display:none;-webkit-flex-direction:column;flex-direction:column;overflow:hidden;
+  -webkit-animation:slideIn .2s ease;animation:slideIn .2s ease
+}
+.notification-dropdown.show{display:-webkit-flex;display:flex}
+@-webkit-keyframes slideIn{from{opacity:0;-webkit-transform:translateY(-8px);transform:translateY(-8px)}to{opacity:1;-webkit-transform:translateY(0);transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.notification-header{padding:12px 16px;border-bottom:1px solid var(--border);display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;-webkit-align-items:center;align-items:center;font-weight:600;font-size:13px}
+.notification-list{overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:320px}
+.notification-item{padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;display:-webkit-flex;display:flex;gap:10px;-webkit-align-items:flex-start;align-items:flex-start}
+.notification-item:hover,.notification-item:active{background:var(--notification-hover)}
+.notification-item.unread{background:var(--accent-light)}
+[data-theme="dark"] .notification-item.unread{background:rgba(96,165,250,.15)}
+.notification-icon{font-size:16px;margin-top:2px;-webkit-flex-shrink:0;flex-shrink:0}
+.notification-content{-webkit-flex:1;flex:1;min-width:0}
+.notification-title{font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:2px}
+.notification-time{font-size:10px;color:var(--text-muted)}
+.notification-message{font-size:11px;color:var(--text-secondary);margin-top:4px;line-height:1.4}
+.notification-footer{padding:10px 16px;border-top:1px solid var(--border);display:-webkit-flex;display:flex;gap:8px}
+.notification-footer button{-webkit-flex:1;flex:1}
+
+.theme-dropdown{
+  position:absolute;top:calc(100% + 8px);right:0;width:180px;
+  background:var(--notification-bg);border:1px solid var(--notification-border);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);z-index:60;
+  display:none;-webkit-flex-direction:column;flex-direction:column;overflow:hidden;
+  -webkit-animation:slideIn .2s ease;animation:slideIn .2s ease
+}
+.theme-dropdown.show{display:-webkit-flex;display:flex}
+.theme-option{padding:12px 16px;cursor:pointer;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:10px;font-size:13px;transition:background .15s}
+.theme-option:hover,.theme-option:active{background:var(--notification-hover)}
+.theme-option.active{color:var(--accent);font-weight:600}
+.theme-icon{font-size:16px}
+
+/* Navigation */
+nav{
+  position:fixed;
+  top:calc(var(--header-h) + var(--safe-top));
+  left:0;right:0;z-index:40;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:-webkit-flex;display:flex;
+  padding:0 12px;gap:2px;
+  overflow-x:auto;
+  /* FIX iOS: pas de backdrop-filter ici — cause des bugs de rendu Safari */
+  height:var(--nav-h);
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  transition:background .3s ease,border-color .3s ease;
+}
+nav::-webkit-scrollbar{display:none}
+.nav-btn{
+  background:transparent;border:none;border-bottom:2px solid transparent;
+  color:var(--text-secondary);cursor:pointer;font-size:12px;font-weight:500;
+  padding:14px 12px;white-space:nowrap;transition:all .2s ease;border-radius:0;
+  -webkit-flex-shrink:0;flex-shrink:0;
+  /* FIX iOS: min-height pour touch target */
+  min-height:44px;
+}
+.nav-btn:hover,.nav-btn:active{color:var(--text-primary);background:var(--surface-alt)}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent);background:transparent}
+
+main{padding:16px;max-width:1400px;margin:0 auto}
+.tab-panel{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:16px;box-shadow:var(--shadow-sm);transition:background .3s ease,border-color .3s ease
+}
+
+.kpi-row{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.kpi-row .kpi{-webkit-flex:1 1 140px;flex:1 1 140px}
+.kpi{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);
+  padding:14px;position:relative;overflow:hidden;transition:background .3s ease,border-color .3s ease
+}
+.kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-secondary);margin-bottom:4px;font-weight:500}
+.kpi-val{font-size:22px;font-weight:700;color:var(--text-primary);line-height:1}
+.kpi-sub{font-size:10px;color:var(--text-muted);margin-top:4px}
+
+.toolbar{
+  display:-webkit-flex;display:flex;gap:8px;margin-bottom:16px;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-align-items:center;align-items:center;
+  padding:12px;background:var(--surface-alt);border:1px solid var(--border);
+  border-radius:var(--radius-md);transition:background .3s ease,border-color .3s ease
+}
+.search-box{
+  -webkit-flex:1;flex:1;min-width:180px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:9px 12px;color:var(--text-primary);
+  font-size:16px!important;outline:none;transition:border .2s,background .3s ease;
+  -webkit-appearance:none;appearance:none;
+}
+select.sel,input,select,textarea{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:8px 12px;color:var(--text-primary);font-family:var(--font-sans);
+  font-size:16px!important;outline:none;transition:border .2s,background .3s ease;
+  /* FIX iOS: désactiver le style natif de Safari */
+  -webkit-appearance:none;appearance:none;
+}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.search-box:focus,input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.btn{padding:8px 14px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s ease;min-height:44px}
+.btn-gold{background:var(--accent);color:#fff}
+.btn-gold:hover,.btn-gold:active{background:var(--accent-hover)}
+.btn-ghost{background:var(--surface);border:1px solid var(--border);color:var(--text-secondary)}
+.btn-ghost:hover,.btn-ghost:active{border-color:var(--border-strong);color:var(--text-primary)}
+.btn-sm{padding:5px 10px;font-size:11px;min-height:36px}
+
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);overflow:auto;-webkit-overflow-scrolling:touch;box-shadow:var(--shadow-sm);transition:background .3s ease,border-color .3s ease}
+table{width:100%;border-collapse:collapse}
+thead th{
+  position:-webkit-sticky;position:sticky;top:0;background:var(--surface-alt);padding:10px 12px;text-align:left;
+  font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-secondary);
+  font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap;z-index:2
+}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+tbody tr:hover{background:var(--surface-alt)}
+tbody td{padding:10px 12px;font-size:12px}
+.mono{font-family:var(--font-mono);font-size:11px;color:var(--text-secondary)}
+.tag{display:-webkit-inline-flex;display:inline-flex;-webkit-align-items:center;align-items:center;padding:3px 8px;border-radius:999px;font-size:9px;font-weight:600;letter-spacing:0.3px}
+.tag-livre{background:rgba(16,185,129,.15);color:var(--success)}
+.tag-cours{background:rgba(59,130,246,.15);color:var(--accent)}
+.tag-attente{background:rgba(245,158,11,.15);color:var(--warning)}
+.tag-annule{background:rgba(239,68,68,.15);color:var(--danger)}
+.act-btns{display:-webkit-flex;display:flex;gap:4px;-webkit-align-items:center;align-items:center}
+.icon-btn{
+  background:var(--surface);border:1px solid var(--border);color:var(--text-secondary);
+  border-radius:var(--radius-sm);padding:4px 8px;cursor:pointer;font-size:11px;
+  transition:all .15s;min-height:36px;min-width:36px;
+}
+.icon-btn:hover,.icon-btn:active{border-color:var(--border-strong);color:var(--text-primary)}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
+
+.pagination{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:space-between;justify-content:space-between;gap:10px;margin-top:14px;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+.pagination-info{font-size:11px;color:var(--text-secondary)}
+.pagination-pages{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:4px;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+.page-btn{
+  background:var(--surface);border:1px solid var(--border);color:var(--text-secondary);
+  border-radius:var(--radius-sm);padding:6px 9px;cursor:pointer;font-size:11px;
+  font-weight:600;min-width:36px;min-height:36px;transition:all .15s
+}
+.page-btn:hover:not(:disabled),.page-btn.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+.page-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* FIX iOS: modals — éviter position:fixed imbriqué */
+.overlay{
+  position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:100;
+  display:-webkit-flex;display:flex;
+  -webkit-align-items:center;align-items:center;
+  -webkit-justify-content:center;justify-content:center;
+  padding:16px;
+  /* FIX iOS: utiliser overflow:scroll au lieu de backdrop-filter */
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.overlay.hidden{display:none}
+.modal{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);
+  width:100%;max-width:640px;max-height:90vh;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  box-shadow:var(--shadow-lg);
+  /* FIX iOS: prevent modal from being cut off */
+  position:relative;
+}
+.modal-hdr{padding:14px 18px;border-bottom:1px solid var(--border);display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;-webkit-align-items:center;align-items:center;background:var(--surface-alt)}
+.modal-ttl{font-size:16px;font-weight:700;letter-spacing:-0.3px;color:var(--text-primary)}
+.cls{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;line-height:1;padding:4px 8px;border-radius:var(--radius-sm);transition:background .15s;min-width:44px;min-height:44px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center}
+.cls:hover,.cls:active{background:var(--surface-alt);color:var(--text-primary)}
+.modal-body{padding:18px}
+.modal-ftr{padding:12px 18px;border-top:1px solid var(--border);display:-webkit-flex;display:flex;-webkit-justify-content:flex-end;justify-content:flex-end;gap:8px;background:var(--surface-alt)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:4px}
+.fg.full{grid-column:1/-1}
+label{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-secondary);font-weight:500}
+textarea{resize:vertical;min-height:55px;-webkit-appearance:none;appearance:none}
+.tarif-hint{background:var(--accent-light);border:1px solid rgba(59,130,246,.2);border-radius:var(--radius-sm);padding:8px 10px;margin-top:4px;font-size:11px;color:var(--accent);display:none}
+.tarif-hint.show{display:block}
+
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;transition:background .3s ease,border-color .3s ease}
+.chart-ttl{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-secondary);margin-bottom:12px;font-weight:600}
+.bar-row{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:8px;margin-bottom:8px}
+.bar-lbl{font-size:11px;color:var(--text-primary);width:100px;-webkit-flex-shrink:0;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{-webkit-flex:1;flex:1;background:var(--surface-alt);border-radius:3px;height:5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;background:var(--accent)}
+.bar-n{font-family:var(--font-mono);font-size:10px;color:var(--text-muted);width:22px;text-align:right;-webkit-flex-shrink:0;flex-shrink:0}
+.period-tabs{display:-webkit-flex;display:flex;gap:6px;margin-bottom:16px;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+.ptab{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:6px 12px;font-size:10px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all .15s;min-height:36px}
+.ptab.active,.ptab:active,.ptab:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.tarifs-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.tarif-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;transition:background .3s ease,border-color .3s ease}
+.tarif-card-hdr{background:var(--surface-alt);padding:10px 14px;font-weight:600;font-size:12px;color:var(--text-primary);border-bottom:1px solid var(--border)}
+.tarif-table td,.tarif-table th{padding:8px 12px;font-size:11px;border-bottom:1px solid var(--border)}
+.tarif-table th{background:var(--surface-alt);font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;font-size:10px}
+
+#receipt-printable{background:#fff;color:#111;font-family:var(--font-sans);padding:28px;border-radius:var(--radius-md)}
+.rcpt-header{display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;-webkit-align-items:flex-start;align-items:flex-start;border-bottom:2px solid #e2e8f0;padding-bottom:14px;margin-bottom:18px}
+.rcpt-brand{font-size:20px;font-weight:700;color:#0f172a;letter-spacing:-0.5px}
+.rcpt-meta{text-align:right}
+.rcpt-title{font-size:16px;font-weight:700;color:#0f172a;text-transform:uppercase;letter-spacing:0.5px}
+.rcpt-table{width:100%;border-collapse:collapse;margin:14px 0;border:1px solid #e2e8f0}
+.rcpt-table th{background:#f8fafc;padding:9px;text-align:left;font-size:10px;text-transform:uppercase;color:#64748b}
+.rcpt-table td{padding:9px;border-bottom:1px solid #e2e8f0;font-size:12px}
+.rcpt-table .total-row td{background:#f1f5f9;font-weight:700}
+@media print{body *{visibility:hidden}#receipt-printable,#receipt-printable *{visibility:visible}#receipt-printable{position:fixed;top:0;left:0;width:100%;background:#fff!important;color:#000!important}.no-print{display:none!important}}
+
+.toast-container{position:fixed;top:calc(var(--header-h) + var(--safe-top) + var(--nav-h) + 16px);right:16px;z-index:200;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:8px;pointer-events:none}
+.toast{
+  background:var(--toast-bg);color:var(--toast-text);padding:12px 16px;border-radius:var(--radius-md);
+  box-shadow:var(--shadow-lg);display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:10px;min-width:280px;max-width:360px;
+  -webkit-animation:toastIn .3s ease,toastOut .3s ease 2.7s forwards;animation:toastIn .3s ease,toastOut .3s ease 2.7s forwards;
+  pointer-events:auto;border-left:4px solid var(--accent)
+}
+.toast.success{border-left-color:var(--success)}
+.toast.error{border-left-color:var(--danger)}
+.toast.warning{border-left-color:var(--warning)}
+@-webkit-keyframes toastIn{from{opacity:0;-webkit-transform:translateX(100%);transform:translateX(100%)}to{opacity:1;-webkit-transform:translateX(0);transform:translateX(0)}}
+@keyframes toastIn{from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}
+@-webkit-keyframes toastOut{to{opacity:0;-webkit-transform:translateX(100%);transform:translateX(100%)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(100%)}}
+.toast-icon{font-size:16px;-webkit-flex-shrink:0;flex-shrink:0}
+.toast-content{-webkit-flex:1;flex:1;font-size:13px;line-height:1.4}
+.toast-close{background:none;border:none;color:var(--toast-text);cursor:pointer;font-size:16px;padding:2px;opacity:.7;transition:opacity .15s;min-width:36px;min-height:36px}
+.toast-close:hover{opacity:1}
+
+@media(max-width:768px){
+  /* Sur téléphone: nav en bas (plus visible) */
+  body{
+    padding-top:calc(60px + var(--safe-top) + 6px);
+    padding-bottom:calc(64px + var(--safe-bottom) + 10px);
+  }
+  header{padding-top:var(--safe-top);height:calc(60px + var(--safe-top))}
+  .brand-icon{width:32px;height:32px;font-size:12px}
+  .brand-name{font-size:16px}
+  .header-stats{gap:8px}
+  .hstat{padding:3px 8px}
+  .hstat-val{font-size:14px}
+  .hstat-lbl{font-size:8px}
+  .icon-btn-header{width:44px;height:44px;padding:6px;font-size:13px}
+  .notification-dropdown{width:280px;right:8px}
+  .theme-dropdown{width:160px;right:8px}
+  nav{
+    top:auto;
+    bottom:0;
+    height:calc(64px + var(--safe-bottom));
+    padding:6px 10px calc(6px + var(--safe-bottom));
+    gap:6px;
+    border-top:1px solid var(--border);
+    border-bottom:none;
+    box-shadow:0 -4px 10px rgba(15,23,42,.06);
+    -webkit-justify-content:space-around;
+    justify-content:space-around;
+  }
+  .nav-btn{
+    font-size:11px;
+    padding:10px 10px;
+    min-height:52px;
+    border-bottom:none;
+    border-radius:12px;
+  }
+  .nav-btn.active{
+    background:var(--accent-light);
+    border-bottom:none;
+  }
+  main{padding:12px}
+  .tab-panel{padding:14px;border-radius:var(--radius-md)}
+  .kpi-row{grid-template-columns:1fr 1fr;gap:10px}
+  .kpi{padding:10px}
+  .kpi-val{font-size:18px}
+  .toolbar{gap:6px;padding:10px}
+  .search-box{min-width:100%;font-size:16px!important;padding:12px}
+  .toolbar select,.btn{font-size:14px;padding:10px}
+  .pagination{-webkit-align-items:stretch;align-items:stretch}
+  .pagination-info{width:100%;text-align:center}
+  .pagination-pages{width:100%;-webkit-justify-content:center;justify-content:center}
+  /* FIX iOS modal: slide depuis le bas */
+  .overlay{padding:0;-webkit-align-items:flex-end;align-items:flex-end}
+  .modal{border-radius:20px 20px 0 0;max-height:92vh;max-width:100%!important;border:none;
+    /* FIX iOS: s'assurer que le modal pousse bien vers le bas avec safe area */
+    padding-bottom:var(--safe-bottom)}
+  .modal-hdr{padding:12px 14px}
+  .modal-ttl{font-size:15px}
+  .modal-body{padding:14px}
+  .modal-ftr{padding:12px 14px;gap:8px;padding-bottom:calc(12px + var(--safe-bottom))}
+  .modal-ftr .btn{-webkit-flex:1;flex:1;padding:14px;font-size:14px}
+  .form-grid{grid-template-columns:1fr;gap:10px}
+  #tbody-desktop{display:none}
+  .tarifs-grid{grid-template-columns:1fr;gap:12px}
+  .period-tabs{gap:4px}
+  .charts-grid{grid-template-columns:1fr}
+  #receipt-printable{padding:18px}
+  .rcpt-header{-webkit-flex-direction:column;flex-direction:column;gap:10px}
+  .rcpt-meta{text-align:left}
+  .rcpt-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .toast-container{top:calc(60px + var(--safe-top) + 48px + 12px);right:12px}
+  .toast{min-width:240px;max-width:calc(100vw - 24px);font-size:12px}
+}
+
+@media print{
+  [data-theme="dark"] body{background:#fff!important;color:#000!important}
+  [data-theme="dark"] .rcpt-header,[data-theme="dark"] .rcpt-table th{background:#f8fafc!important}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="brand-icon">GDCI</div>
+    <div><div class="brand-name">GDCI</div><div class="brand-sub">Transport & Logistique</div></div>
+  </div>
+  <div class="header-actions">
+    <span class="sync" id="sync-state">Connexion...</span>
+    <div class="header-stats">
+      <div class="hstat"><div class="hstat-val" id="hdr-today">0</div><div class="hstat-lbl">Auj.</div></div>
+      <div class="hstat"><div class="hstat-val" id="hdr-month">0</div><div class="hstat-lbl">Mois</div></div>
+      <div class="hstat"><div class="hstat-val" id="hdr-total">0</div><div class="hstat-lbl">Total</div></div>
+    </div>
+    <div style="position:relative">
+      <button class="icon-btn-header" id="theme-toggle" title="Mode sombre" aria-label="Changer le thème">🌓</button>
+      <div class="theme-dropdown" id="theme-dropdown">
+        <div class="theme-option" data-theme="light" onclick="setTheme('light')"><span class="theme-icon">☀️</span> Mode clair</div>
+        <div class="theme-option" data-theme="dark" onclick="setTheme('dark')"><span class="theme-icon">🌙</span> Mode sombre</div>
+        <div class="theme-option" data-theme="auto" onclick="setTheme('auto')"><span class="theme-icon">🤖</span> Système</div>
+      </div>
+    </div>
+    <div style="position:relative">
+      <button class="icon-btn-header" id="notif-toggle" title="Notifications" aria-label="Notifications">
+        🔔<span class="badge" id="notif-badge" style="display:none">0</span>
+      </button>
+      <div class="notification-dropdown" id="notif-dropdown">
+        <div class="notification-header">
+          <span>Notifications</span>
+          <button class="btn btn-sm btn-ghost" onclick="markAllRead()">Tout lu</button>
+        </div>
+        <div class="notification-list" id="notif-list"></div>
+        <div class="notification-footer">
+          <button class="btn btn-sm btn-ghost" onclick="clearNotifications()">Effacer</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-gold btn-sm" onclick="openVoyageModal()">+ Nouveau</button>
+  </div>
+</header>
+
+<nav>
+  <button class="nav-btn active" onclick="showTab('historique',this)">📋 Historique</button>
+  <button class="nav-btn" onclick="showTab('stats',this)">📊 Statistiques</button>
+  <button class="nav-btn" onclick="showTab('tarifs',this)">💰 Tarifs</button>
+  <button class="nav-btn" onclick="showTab('matricules',this)">🚛 Matricules</button>
+</nav>
+
+<main>
+  <div id="tab-historique" class="tab-panel">
+    <div class="kpi-row" id="kpi-row"></div>
+    <div class="toolbar">
+      <input class="search-box" id="search" placeholder="🔍 Matricule, marchandise..." oninput="onSearchInput()">
+      <select class="sel" id="filter-type" onchange="resetHistoryPage();renderTable()"><option value="">Tous camions</option><option>10 Roues</option><option>12 Roues</option><option>Semi-Remorque</option></select>
+      <select class="sel" id="filter-statut" onchange="resetHistoryPage();renderTable()"><option value="">Tous statuts</option><option>Livré</option><option>En cours</option><option>En attente</option><option>Annulé</option></select>
+      <select class="sel" id="filter-period" onchange="resetHistoryPage();renderTable()"><option value="">Toute période</option><option value="today">Aujourd'hui</option><option value="week">Cette semaine</option><option value="month">Ce mois</option><option value="year">Cette année</option></select>
+      <select class="sel" id="page-size" onchange="changePageSize(this.value)"><option value="10">10/page</option><option value="25">25/page</option><option value="50">50/page</option></select>
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">📄 CSV</button>
+      <button class="btn btn-ghost btn-sm" onclick="loadData()">↻</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>N°</th><th>Date</th><th>Matricule</th><th>Type</th><th>Destination</th><th>Marchandise</th><th>Tonnage</th><th>Total</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="tbody"></tbody></table>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <div id="tab-stats" class="tab-panel" style="display:none">
+    <div class="period-tabs">
+      <button class="ptab active" onclick="setPeriod('today',this)">Aujourd'hui</button>
+      <button class="ptab" onclick="setPeriod('week',this)">Semaine</button>
+      <button class="ptab" onclick="setPeriod('month',this)">Ce mois</button>
+      <button class="ptab" onclick="setPeriod('year',this)">Année</button>
+      <button class="ptab" onclick="setPeriod('all',this)">Tout</button>
+    </div>
+    <div class="charts-grid" id="charts-grid"></div>
+  </div>
+
+  <div id="tab-tarifs" class="tab-panel" style="display:none">
+    <div class="toolbar" style="margin-bottom:16px">
+      <button class="btn btn-gold btn-sm" onclick="openTarifModal()">+ Destination</button>
+      <button class="btn btn-ghost btn-sm" onclick="printBareme()">🖨 Imprimer</button>
+    </div>
+    <div class="tarifs-grid">
+      <div class="tarif-card">
+        <div class="tarif-card-hdr">🚛 TARIFS PAR DESTINATION</div>
+        <table class="tarif-table"><thead><tr><th>Destination</th><th>10R</th><th>12R</th><th>SR</th><th></th></tr></thead><tbody id="tarif-dest-tbody"></tbody></table>
+      </div>
+      <div class="tarif-card">
+        <div class="tarif-card-hdr">⛏ PRIX MATÉRIAUX / TONNE</div>
+        <div id="tarif-mat-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-matricules" class="tab-panel" style="display:none">
+    <div class="toolbar">
+      <input class="search-box" id="mat-search" placeholder="🔍 Rechercher matricule, chauffeur, téléphone..." oninput="renderMats()">
+      <button class="btn btn-gold btn-sm" onclick="openMatriculeModal()">+ Camion</button>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Matricule</th><th>Chauffeur</th><th>Téléphone</th><th>Voyages</th><th>Dernier</th><th></th></tr></thead><tbody id="mat-tbody"></tbody></table></div>
+  </div>
+</main>
+
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Modals -->
+<div class="overlay hidden" id="modal-voyage">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-ttl" id="voyage-modal-title">NOUVEAU VOYAGE</span><button class="cls" onclick="hideModal('modal-voyage')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg"><label>Date *</label><input type="date" id="f-date"></div>
+        <div class="fg"><label>Matricule *</label><input type="text" id="f-mat" placeholder="Ex : 1234 AB 01" list="mat-dl" oninput="syncMatriculeType()"><datalist id="mat-dl"></datalist></div>
+        <div class="fg"><label>Type</label><select id="f-camtype" onchange="updateTransportHint()"><option>10 Roues</option><option>12 Roues</option><option>Semi-Remorque</option></select></div>
+        <div class="fg"><label>Destination *</label><select id="f-dest" onchange="updateTransportHint()"><option value="">— Choisir —</option><option>Bassam</option><option>8 Kilo</option><option>Modeste</option><option>Bonoua</option><option>Samo</option><option>Assinie</option><option>Adiaké</option><option>Aboisso</option><option>Assouindé</option><option>Dokui</option><option>Moamé</option><option>Vitré 1</option><option>Vitré 2</option><option>Ananie</option><option>Grand Abidjan</option><option>Mondoukou</option></select></div>
+        <div class="fg full"><div id="tarif-transport-hint" class="tarif-hint"></div></div>
+        <div class="fg"><label>Marchandise *</label><select id="f-march" onchange="updateMarchHint()"><option value="">— Choisir —</option><option>Sable 0/5</option><option>Sable 0/8</option><option>Gravillons 5/15</option><option>Gravillons 15/25</option><option>Gravillons 5/25</option><option>Gravillons 14/20</option><option>Gravillons 4/10</option><option>Gravillons 10/14</option><option>Concassé 0/31.5</option><option>Concassé 0/25</option><option>Concassé 0/15-0/20</option><option>Concassé 0/40</option><option>Concassé 25/40</option><option>Concassé 25/80</option><option>Concassé 40/80</option><option>Concassé 61/150</option><option>Moelons non triés</option><option>Moelons triés</option><option>Gravier</option><option>Sable</option><option>Latérite</option><option>Ciment</option><option>Fer</option><option>Bois</option><option>Enrobé</option><option>Terre rouge</option><option>Autre</option></select></div>
+        <div class="fg"><label>Prix matériau / tonne (FCFA)</label><input type="number" id="f-prix-mat" min="0" oninput="calcTotal()" style="background:var(--surface-alt);font-weight:600"><div id="tarif-mat-hint" class="tarif-hint"></div></div>
+        <div class="fg"><label>Tonnage (t)</label><input type="number" id="f-tonnage" placeholder="Ex : 25" min="0" step="0.5" oninput="calcTotal()"><div style="font-size:10px;color:var(--text-muted);margin-top:4px">🚛 10R:0-25t · 12R:25-30t · SR:30-45t</div></div>
+        <div class="fg"><label>Tarif transport (FCFA)</label><input type="number" id="f-tarif" readonly min="0" style="background:var(--surface-alt);font-weight:600;cursor:not-allowed"></div>
+        <div class="fg"><label>Total général (FCFA)</label><input type="number" id="f-total" readonly style="background:var(--surface-alt);font-weight:600"></div>
+        <div class="fg"><label>Statut</label><select id="f-statut2"><option>Livré</option><option>En cours</option><option>En attente</option><option>Annulé</option></select></div>
+        <div class="fg"><label>Client / Chantier</label><input type="text" id="f-client" placeholder="Nom du client"></div>
+        <div class="fg full"><label>Bon de livraison / Notes</label><textarea id="f-notes" placeholder="N° bon, observations..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-ftr"><button class="btn btn-ghost btn-sm" onclick="hideModal('modal-voyage')">Annuler</button><button class="btn btn-gold btn-sm" onclick="saveVoyage()">Enregistrer</button></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="modal-detail"><div class="modal"><div class="modal-hdr"><span class="modal-ttl">DÉTAIL DU VOYAGE</span><button class="cls" onclick="hideModal('modal-detail')">✕</button></div><div class="modal-body" id="detail-body"></div><div class="modal-ftr"><button class="btn btn-ghost btn-sm" onclick="hideModal('modal-detail')">Fermer</button></div></div></div>
+
+<div class="overlay hidden" id="modal-mat">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-hdr"><span class="modal-ttl">ENREGISTRER CAMION</span><button class="cls" onclick="hideModal('modal-mat')">✕</button></div>
+    <div class="modal-body"><div class="form-grid"><div class="fg"><label>Matricule *</label><input type="text" id="m-mat" placeholder="1234 AB 01"></div><div class="fg"><label>Nom du chauffeur *</label><input type="text" id="m-nom" placeholder="Prénom Nom"></div><div class="fg full"><label>Numéro du chauffeur *</label><input type="tel" id="m-tel" placeholder="07 XX XX XX XX"></div></div></div>
+    <div class="modal-ftr"><button class="btn btn-ghost btn-sm" onclick="hideModal('modal-mat')">Annuler</button><button class="btn btn-gold btn-sm" onclick="saveMatricule()">Enregistrer</button></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="modal-receipt">
+  <div class="modal" style="max-width:720px">
+    <div class="modal-hdr no-print"><span class="modal-ttl" id="receipt-modal-title">DOCUMENT TRANSPORT</span><div style="display:-webkit-flex;display:flex;gap:6px;-webkit-align-items:center;align-items:center"><button class="btn btn-gold btn-sm" onclick="printReceipt()">🖨 PDF</button><button class="cls" onclick="hideModal('modal-receipt')">✕</button></div></div>
+    <div class="modal-body" style="padding:0"><div id="receipt-printable"></div></div>
+    <div class="modal-ftr no-print"><button class="btn btn-ghost btn-sm" onclick="hideModal('modal-receipt')">Fermer</button><button class="btn btn-gold btn-sm" onclick="printReceipt()">🖨 Imprimer</button></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="modal-tarif">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-hdr"><span class="modal-ttl" id="tarif-modal-title">NOUVEAU TARIF</span><button class="cls" onclick="hideModal('modal-tarif')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg full"><label>Destination *</label><input type="text" id="t-dest" placeholder="Ex : Bassam"></div>
+        <div class="fg"><label>10 Roues</label><input type="number" id="t-10r" min="0" placeholder="90000"></div>
+        <div class="fg"><label>12 Roues</label><input type="number" id="t-12r" min="0" placeholder="100000"></div>
+        <div class="fg full"><label>Semi-Remorque</label><input type="number" id="t-sr" min="0" placeholder="120000"></div>
+      </div>
+    </div>
+    <div class="modal-ftr"><button class="btn btn-ghost btn-sm" onclick="hideModal('modal-tarif')">Annuler</button><button class="btn btn-gold btn-sm" onclick="saveTarif()">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- FIX iOS: Supabase SDK avec fallback (certains réseaux bloquent unpkg) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+        onerror="this.onerror=null;this.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js';"></script>
+<script>
+// === CONFIGURATION SUPABASE ===
+const SUPABASE_URL = 'https://fdkscnigeyrexbbvletr.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_p5xtjM1FBjQ2sfj709_rig_cOh41SOq';
+// iOS/Safari: si le SDK ne charge pas (réseau, bloqueur, etc.), on évite de casser tout le JS (boutons inactifs).
+let db = null;
+function initSupabase(){
+  try{
+    if(!window.supabase || typeof window.supabase.createClient !== 'function'){
+      throw new Error('Supabase SDK introuvable (supabase.createClient manquant)');
+    }
+    // On n'utilise pas l'auth ici, donc on peut désactiver la persistance (évite des soucis Safari/Private).
+    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
+    return true;
+  }catch(e){
+    console.error('Supabase init error:', e);
+    db = null;
+    return false;
+  }
+}
+
+// === DONNÉES PAR DÉFAUT ===
+let TARIFS_TRANSPORT = {
+  'Bassam':{'10 Roues':90000,'12 Roues':100000,'Semi-Remorque':120000},
+  '8 Kilo':{'10 Roues':100000,'12 Roues':110000,'Semi-Remorque':180000},
+  'Modeste':{'10 Roues':85000,'12 Roues':100000,'Semi-Remorque':130000},
+  'Bonoua':{'10 Roues':120000,'12 Roues':130000,'Semi-Remorque':160000},
+  'Samo':{'10 Roues':130000,'12 Roues':140000,'Semi-Remorque':170000},
+  'Assinie':{'10 Roues':150000,'12 Roues':180000,'Semi-Remorque':200000},
+  'Adiaké':{'10 Roues':150000,'12 Roues':180000,'Semi-Remorque':200000},
+  'Aboisso':{'10 Roues':180000,'12 Roues':200000,'Semi-Remorque':250000},
+  'Assouindé':{'10 Roues':140000,'12 Roues':170000,'Semi-Remorque':180000},
+  'Dokui':{'10 Roues':0,'12 Roues':0,'Semi-Remorque':0},
+  'Moamé':{'10 Roues':130000,'12 Roues':160000,'Semi-Remorque':170000},
+  'Vitré 1':{'10 Roues':100000,'12 Roues':110000,'Semi-Remorque':140000},
+  'Vitré 2':{'10 Roues':120000,'12 Roues':130000,'Semi-Remorque':160000},
+  'Ananie':{'10 Roues':80000,'12 Roues':90000,'Semi-Remorque':130000},
+  'Grand Abidjan':{'10 Roues':80000,'12 Roues':90000,'Semi-Remorque':130000},
+  'Mondoukou':{'10 Roues':135000,'12 Roues':165000,'Semi-Remorque':180000}
+};
+const PRIX_MATERIAUX = {
+  'Sable 0/5':5500,'Sable 0/8':6000,'Gravillons 5/15':6300,'Gravillons 15/25':6300,'Gravillons 5/25':6300,
+  'Gravillons 14/20':6300,'Gravillons 4/10':8000,'Gravillons 10/14':6500,'Concassé 0/31.5':6500,
+  'Concassé 0/25':6500,'Concassé 0/15-0/20':6500,'Concassé 0/40':6500,'Concassé 25/40':6500,
+  'Concassé 25/80':7000,'Concassé 40/80':7000,'Concassé 61/150':7000,'Moelons non triés':7000,'Moelons triés':8000,
+};
+
+// === ÉTAT GLOBAL ===
+let voyages = [];
+let matricules = [];
+let editId = null;
+let statPeriod = 'today';
+let historyPage = 1;
+let historyPageSize = 10;
+let searchDebounce = null;
+let notifications = [];
+let currentTheme = 'auto';
+let offlineMode = false;
+
+// FIX iOS: charger depuis localStorage de façon sécurisée
+try {
+  notifications = JSON.parse(localStorage.getItem('gdci_notifications') || '[]');
+  currentTheme = localStorage.getItem('gdci_theme') || 'auto';
+} catch(e) {}
+
+// Cache local (utile sur iPhone quand Supabase ne répond pas / file://)
+function loadCache(){
+  try{
+    var cv = JSON.parse(localStorage.getItem('gdci_cache_voyages') || '[]');
+    var cm = JSON.parse(localStorage.getItem('gdci_cache_matricules') || '[]');
+    if(Array.isArray(cv) && cv.length) voyages = cv;
+    if(Array.isArray(cm) && cm.length) matricules = cm;
+  }catch(e){}
+}
+function saveCache(){
+  try{ localStorage.setItem('gdci_cache_voyages', JSON.stringify(voyages||[])); }catch(e){}
+  try{ localStorage.setItem('gdci_cache_matricules', JSON.stringify(matricules||[])); }catch(e){}
+}
+
+// === UTILITAIRES ===
+function setSync(t){document.getElementById('sync-state').textContent=t}
+
+// FIX iOS: today() via calcul local évite les bugs de timezone
+function today(){
+  var d = new Date();
+  var y = d.getFullYear();
+  var m = String(d.getMonth()+1).padStart(2,'0');
+  var j = String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+j;
+}
+
+function normalizeMat(s){return String(s||'').trim().replace(/[\s\-_.]/g,'').toUpperCase()}
+function normalizeKey(s){return String(s||'').trim().replace(/\s+/g,' ').toLowerCase()}
+function fmtDate(d){
+  if(!d)return'—';
+  var parts=String(d).split('-');
+  if(parts.length<3)return d;
+  return parts[2]+'/'+parts[1]+'/'+parts[0];
+}
+function fmtFCFA(n){return n?Number(n).toLocaleString('fr-FR')+' FCFA':'—'}
+function fmtCompactFCFA(n){var v=Number(n||0);if(v>=1000000)return (v/1000000).toLocaleString('fr-FR',{maximumFractionDigits:1})+'M FCFA';if(v>=1000)return Math.round(v/1000).toLocaleString('fr-FR')+'k FCFA';return v.toLocaleString('fr-FR')+' FCFA'}
+// Calcul robuste: certains anciens enregistrements peuvent avoir prixMat déjà "total" (au lieu de FCFA/tonne).
+function matCost(v){
+  var prix = Number(v.prixMat||0);
+  var ton = Number(v.tonnage||0);
+  if(!prix || !ton) return 0;
+
+  // Si on connaît le prix officiel/t pour cette marchandise, on détecte le format.
+  var ref = v.marchandise && PRIX_MATERIAUX[v.marchandise] ? Number(PRIX_MATERIAUX[v.marchandise]) : 0;
+  if(ref>0){
+    // Cas "prixMat déjà total": ex 162500 au lieu de 6500, et proche de ref*ton.
+    var refTotal = ref * ton;
+    if(prix > ref*3 && Math.abs(prix - refTotal) <= Math.max(5000, refTotal*0.2)){
+      return prix; // déjà total
+    }
+  }
+
+  // Heuristique générale: au-delà d'un certain seuil, on suppose que c'est déjà un total (évite les millions).
+  if(prix >= 50000) return prix;
+
+  // Sinon: prix en FCFA/tonne
+  return prix * ton;
+}
+function totalVoyage(v){return Number(v.tarif||0) + matCost(v)}
+function startOf(p){var d=new Date();if(p==='today')return today();if(p==='week'){d.setDate(d.getDate()-d.getDay());var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),j=String(d.getDate()).padStart(2,'0');return y+'-'+m+'-'+j}if(p==='month'){var t=today();return t.slice(0,7)+'-01'}if(p==='year'){return today().slice(0,4)+'-01-01'}return'1970-01-01'}
+function filterP(arr,p){if(!p||p==='all')return arr;var from=startOf(p),to=today();return arr.filter(function(v){return v.date>=from&&v.date<=to})}
+// (ancienne version de typeTag supprimée : elle cassait l'exécution sur Safari/iPhone)
+function statutTag(s){var m={'Livré':'tag-livre','En cours':'tag-cours','En attente':'tag-attente','Annulé':'tag-annule'};return'<span class="tag '+(m[s]||'')+'">'+(s||'—')+'</span>'}
+function genNum(){var d=new Date();var pad=function(n){return String(n).padStart(2,'0')};var prefix='GDCI-'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'-';var max=voyages.reduce(function(a,v){var n=String(v.num||'').startsWith(prefix)?Number(String(v.num).slice(prefix.length)):0;return Number.isFinite(n)&&n>a?n:a},0);return prefix+String(max+1).padStart(4,'0')}
+
+// FIX: typeTag réécrit proprement
+function typeTag(t){
+  var cls = t==='10 Roues'?'tag-livre':t==='12 Roues'?'tag-cours':'tag-attente';
+  return '<span class="tag '+cls+'">'+(t||'—')+'</span>';
+}
+
+// === NOTIFICATIONS ===
+function addNotification(type,title,message){
+  var notif={id:Date.now().toString(),type:type,title:title,message:message,time:new Date().toISOString(),read:false};
+  notifications.unshift(notif);
+  if(notifications.length>20)notifications.pop();
+  try{localStorage.setItem('gdci_notifications',JSON.stringify(notifications))}catch(e){}
+  updateNotifBadge();renderNotifications();showToast(type,title,message);
+}
+function updateNotifBadge(){
+  var badge=document.getElementById('notif-badge');
+  var unread=notifications.filter(function(n){return!n.read}).length;
+  if(unread>0){badge.textContent=unread>9?'9+':unread;badge.style.display='block'}else{badge.style.display='none'}
+}
+function renderNotifications(){
+  var list=document.getElementById('notif-list');
+  if(notifications.length===0){list.innerHTML='<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px">Aucune notification</div>';return}
+  var icons={success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+  list.innerHTML=notifications.slice(0,10).map(function(n){
+    var d=new Date(n.time);
+    var time=d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    return '<div class="notification-item '+(n.read?'':'unread')+'" onclick="markAsRead(\''+n.id+'\')"><span class="notification-icon">'+(icons[n.type]||'🔔')+'</span><div class="notification-content"><div class="notification-title">'+n.title+'</div><div class="notification-message">'+n.message+'</div><div class="notification-time">'+time+'</div></div></div>';
+  }).join('');
+}
+function markAsRead(id){
+  var notif=notifications.find(function(n){return n.id===id});
+  if(notif){notif.read=true;try{localStorage.setItem('gdci_notifications',JSON.stringify(notifications))}catch(e){}updateNotifBadge();renderNotifications()}
+}
+function markAllRead(){
+  notifications.forEach(function(n){n.read=true});
+  try{localStorage.setItem('gdci_notifications',JSON.stringify(notifications))}catch(e){}
+  updateNotifBadge();renderNotifications();
+}
+function clearNotifications(){
+  if(!confirm('Effacer toutes les notifications ?'))return;
+  notifications=[];
+  try{localStorage.setItem('gdci_notifications',JSON.stringify(notifications))}catch(e){}
+  updateNotifBadge();renderNotifications();
+}
+function showToast(type,title,message){
+  var container=document.getElementById('toast-container');
+  var toast=document.createElement('div');
+  toast.className='toast '+type;
+  var icons={success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+  toast.innerHTML='<span class="toast-icon">'+(icons[type]||'🔔')+'</span><div class="toast-content"><strong>'+title+'</strong><br>'+message+'</div><button class="toast-close" onclick="this.parentElement.remove()">×</button>';
+  container.appendChild(toast);
+  setTimeout(function(){if(toast.parentElement)toast.remove()},3000);
+}
+
+// === DARK MODE ===
+function setTheme(mode){
+  currentTheme=mode;
+  try{localStorage.setItem('gdci_theme',mode)}catch(e){}
+  applyTheme();
+  document.querySelectorAll('.theme-option').forEach(function(opt){
+    opt.classList.toggle('active',opt.dataset.theme===mode);
+  });
+  hideDropdowns();
+}
+function applyTheme(){
+  var prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var theme=currentTheme==='auto'?(prefersDark?'dark':'light'):currentTheme;
+  document.documentElement.setAttribute('data-theme',theme);
+  document.getElementById('theme-toggle').textContent=theme==='dark'?'☀️':'🌙';
+}
+
+// === DROPDOWNS ===
+function toggleDropdown(id){
+  var el=document.getElementById(id);
+  var isShown=el.classList.contains('show');
+  hideDropdowns();
+  if(!isShown)el.classList.add('show');
+}
+function hideDropdowns(){
+  document.querySelectorAll('.notification-dropdown,.theme-dropdown').forEach(function(d){d.classList.remove('show')});
+}
+
+// FIX iOS: utiliser touchstart en plus de click pour les boutons
+document.addEventListener('click',function(e){
+  if(!e.target.closest('#notif-toggle')&&!e.target.closest('#notif-dropdown'))document.getElementById('notif-dropdown').classList.remove('show');
+  if(!e.target.closest('#theme-toggle')&&!e.target.closest('#theme-dropdown'))document.getElementById('theme-dropdown').classList.remove('show');
+});
+document.getElementById('notif-toggle').addEventListener('click',function(e){e.stopPropagation();toggleDropdown('notif-dropdown')});
+document.getElementById('theme-toggle').addEventListener('click',function(e){e.stopPropagation();toggleDropdown('theme-dropdown')});
+
+// === NAVIGATION ===
+function showTab(name,btn){
+  ['historique','stats','tarifs','matricules'].forEach(function(t){document.getElementById('tab-'+t).style.display=t===name?'':'none'});
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  if(name==='stats')renderStats();
+  if(name==='matricules')renderMats();
+  if(name==='tarifs')renderTarifs();
+}
+function showModal(id){document.getElementById(id).classList.remove('hidden')}
+function hideModal(id){document.getElementById(id).classList.add('hidden')}
+
+// === KPI & TABLE ===
+function renderKPI(){
+  var mV=filterP(voyages,'month'),tV=filterP(voyages,'today'),wV=filterP(voyages,'week');
+  var ca=voyages.filter(function(v){return v.statut==='Livré'}).reduce(function(a,v){return a+totalVoyage(v)},0);
+  var kpis=[{lbl:"Aujourd'hui",val:tV.length,sub:'voyages'},{lbl:'Semaine',val:wV.length,sub:'voyages'},{lbl:'Ce mois',val:mV.length,sub:'voyages'},{lbl:'Total',val:voyages.length,sub:'voyages'},{lbl:'CA livré',val:fmtCompactFCFA(ca).replace(' FCFA',''),sub:'FCFA'}];
+  document.getElementById('kpi-row').innerHTML=kpis.map(function(k){return'<div class="kpi"><div class="kpi-lbl">'+k.lbl+'</div><div class="kpi-val">'+k.val+'</div><div class="kpi-sub">'+k.sub+'</div></div>'}).join('');
+  document.getElementById('hdr-today').textContent=tV.length;
+  document.getElementById('hdr-month').textContent=mV.length;
+  document.getElementById('hdr-total').textContent=voyages.length;
+}
+function resetHistoryPage(){historyPage=1}
+function changePageSize(v){historyPageSize=Number(v)||10;resetHistoryPage();renderTable()}
+function setHistoryPage(p){historyPage=p;renderTable()}
+
+function renderPagination(total){
+  var el=document.getElementById('pagination');if(!el)return;
+  if(!total){el.innerHTML='';return}
+  var pages=Math.max(1,Math.ceil(total/historyPageSize));
+  historyPage=Math.min(Math.max(1,historyPage),pages);
+  var from=(historyPage-1)*historyPageSize+1,to=Math.min(total,historyPage*historyPageSize);
+  var nums=new Set([1,pages,historyPage-1,historyPage,historyPage+1]);
+  if(pages<=7)for(var i=1;i<=pages;i++)nums.add(i);
+  var sorted=Array.from(nums).filter(function(n){return n>=1&&n<=pages}).sort(function(a,b){return a-b});
+  var last=0,buttons='';
+  sorted.forEach(function(n){if(n-last>1)buttons+='<span style="color:var(--text-muted);padding:0 4px">…</span>';buttons+='<button class="page-btn '+(n===historyPage?'active':'')+'" onclick="setHistoryPage('+n+')">'+n+'</button>';last=n});
+  el.innerHTML='<div class="pagination-info">'+from+'-'+to+' sur '+total+'</div><div class="pagination-pages"><button class="page-btn" onclick="setHistoryPage(1)" '+(historyPage===1?'disabled':'')+'>«</button><button class="page-btn" onclick="setHistoryPage('+(historyPage-1)+')" '+(historyPage===1?'disabled':'')+'>‹</button>'+buttons+'<button class="page-btn" onclick="setHistoryPage('+(historyPage+1)+')" '+(historyPage===pages?'disabled':'')+'>›</button><button class="page-btn" onclick="setHistoryPage('+pages+')" '+(historyPage===pages?'disabled':'')+'>»</button></div>';
+}
+
+// FIX iOS: oninput pour la recherche avec fallback
+function onSearchInput(){
+  clearTimeout(searchDebounce);
+  searchDebounce=setTimeout(function(){resetHistoryPage();renderTable()},200);
+}
+
+function getFiltered(){
+  var q=document.getElementById('search').value.toLowerCase(),
+      ft=document.getElementById('filter-type').value,
+      fs=document.getElementById('filter-statut').value,
+      fp=document.getElementById('filter-period').value;
+  var arr=voyages.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))});
+  if(q)arr=arr.filter(function(v){return JSON.stringify(v).toLowerCase().indexOf(q)>=0});
+  if(ft)arr=arr.filter(function(v){return v.type===ft});
+  if(fs)arr=arr.filter(function(v){return v.statut===fs});
+  if(fp)arr=filterP(arr,fp);
+  return arr;
+}
+
+function renderTable(){
+  renderKPI();
+  var arr=getFiltered(),tb=document.getElementById('tbody');
+  renderPagination(arr.length);
+  if(!arr.length){tb.innerHTML='<tr><td colspan="10"><div class="empty-state"><p>Aucun voyage trouvé</p></div></td></tr>';return}
+  var pageArr=arr.slice((historyPage-1)*historyPageSize,historyPage*historyPageSize);
+  var mob=window.innerWidth<=768;
+  if(mob){
+    tb.innerHTML=pageArr.map(function(v){
+      return '<tr style="display:block;background:var(--surface);border-bottom:2px solid var(--border)"><td style="display:block;padding:12px"><div style="display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;-webkit-align-items:center;align-items:center;margin-bottom:10px"><div><div style="font-family:var(--font-mono);font-size:14px;font-weight:600;color:var(--text-primary)">'+(v.matricule||'—')+'</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px">'+(v.num||'')+' · '+fmtDate(v.date)+'</div></div><div style="display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:flex-end;align-items:flex-end;gap:4px">'+statutTag(v.statut)+typeTag(v.type)+'</div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-bottom:12px"><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Destination</div><div style="font-size:12px;font-weight:500">'+(v.destination||'—')+'</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Marchandise</div><div style="font-size:12px;font-weight:500">'+(v.marchandise||'—')+'</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Tonnage</div><div style="font-size:12px;font-family:var(--font-mono)">'+(v.tonnage?v.tonnage+' t':'—')+'</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Total</div><div style="font-size:14px;font-family:var(--font-mono);color:var(--text-primary);font-weight:700">'+fmtFCFA(totalVoyage(v))+'</div></div></div><div style="display:-webkit-flex;display:flex;gap:6px;-webkit-justify-content:flex-end;justify-content:flex-end"><button class="icon-btn" onclick="viewDetail(\''+v.id+'\')" style="padding:6px 10px">👁</button><button class="icon-btn" onclick="openReceipt(\''+v.id+'\')" style="padding:6px 10px">🧾</button><button class="icon-btn" onclick="editVoyage(\''+v.id+'\')" style="padding:6px 10px">✏</button><button class="icon-btn" onclick="delVoyage(\''+v.id+'\')" style="padding:6px 10px;color:var(--danger)">✕</button></div></td></tr>';
+    }).join('');
+    return;
+  }
+  tb.innerHTML=pageArr.map(function(v){return'<tr><td class="mono">'+(v.num||'—')+'</td><td class="mono">'+fmtDate(v.date)+'</td><td><strong style="color:var(--text-primary)">'+(v.matricule||'—')+'</strong></td><td>'+typeTag(v.type)+'</td><td>'+(v.destination||'—')+'</td><td style="font-weight:500">'+(v.marchandise||'—')+'</td><td class="mono">'+(v.tonnage?v.tonnage+' t':'—')+'</td><td style="font-weight:600">'+fmtFCFA(totalVoyage(v))+'</td><td>'+statutTag(v.statut)+'</td><td><div class="act-btns"><button class="icon-btn" onclick="viewDetail(\''+v.id+'\')">👁</button><button class="icon-btn" onclick="openReceipt(\''+v.id+'\')">🧾</button><button class="icon-btn" onclick="editVoyage(\''+v.id+'\')">✏</button><button class="icon-btn" onclick="delVoyage(\''+v.id+'\')" style="color:var(--danger)">✕</button></div></td></tr>'}).join('');
+}
+
+// === CALCULS & HINTS ===
+function updateTransportHint(){
+  var dest=document.getElementById('f-dest').value,
+      type=document.getElementById('f-camtype').value,
+      hint=document.getElementById('tarif-transport-hint');
+  if(dest&&TARIFS_TRANSPORT[dest]&&TARIFS_TRANSPORT[dest][type]){
+    var val=TARIFS_TRANSPORT[dest][type];
+    hint.innerHTML='✅ Tarif : <strong>'+val.toLocaleString('fr-FR')+' FCFA</strong>';
+    hint.classList.add('show');
+    document.getElementById('f-tarif').value=val;
+  }else{
+    hint.classList.remove('show');
+    document.getElementById('f-tarif').value='';
+  }
+  calcTotal();
+}
+function updateMarchHint(){
+  var march=document.getElementById('f-march').value,
+      hint=document.getElementById('tarif-mat-hint'),
+      field=document.getElementById('f-prix-mat');
+  if(march&&PRIX_MATERIAUX[march]){
+    var val=PRIX_MATERIAUX[march];
+    hint.innerHTML='✅ Prix : <strong>'+val.toLocaleString('fr-FR')+' FCFA/t</strong>';
+    hint.classList.add('show');
+    field.readOnly=true;field.style.cursor='not-allowed';field.value=val;
+  }else{
+    hint.classList.remove('show');
+    field.readOnly=false;field.style.cursor='text';field.value='';
+  }
+  calcTotal();
+}
+function syncMatriculeType(){
+  var mat=normalizeMat(document.getElementById('f-mat').value);
+  var found=matricules.find(function(m){return normalizeMat(m.matricule)===mat});
+  if(found&&found.type){document.getElementById('f-camtype').value=found.type;updateTransportHint()}
+}
+function calcTotal(){
+  var total=Number(document.getElementById('f-prix-mat').value||0)*Number(document.getElementById('f-tonnage').value||0)+Number(document.getElementById('f-tarif').value||0);
+  document.getElementById('f-total').value=total>0?total:'';
+}
+
+// === VOYAGE MODAL ===
+function openVoyageModal(prefill){
+  editId=prefill&&prefill.id?prefill.id:null;
+  document.getElementById('voyage-modal-title').textContent=editId?'MODIFIER VOYAGE':'NOUVEAU VOYAGE';
+  document.getElementById('f-date').value=prefill&&prefill.date?prefill.date:today();
+  document.getElementById('f-mat').value=prefill&&prefill.matricule?prefill.matricule:'';
+  document.getElementById('f-camtype').value=prefill&&prefill.type?prefill.type:'10 Roues';
+  document.getElementById('f-dest').value=prefill&&prefill.destination?prefill.destination:'';
+  document.getElementById('f-march').value=prefill&&prefill.marchandise?prefill.marchandise:'';
+  // Toujours afficher un prix / tonne dans le formulaire (même si d'anciens voyages ont un prix total stocké).
+  (function(){
+    var prix=prefill&&prefill.prixMat?Number(prefill.prixMat):0;
+    var ton=prefill&&prefill.tonnage?Number(prefill.tonnage):0;
+    if(prix && ton){
+      var mc=matCost(prefill);
+      var unit=mc?Math.round(mc/ton):prix;
+      document.getElementById('f-prix-mat').value=unit||'';
+    }else{
+      document.getElementById('f-prix-mat').value=prefill&&prefill.prixMat?prefill.prixMat:'';
+    }
+  })();
+  document.getElementById('f-prix-mat').readOnly=false;
+  document.getElementById('f-tonnage').value=prefill&&prefill.tonnage?prefill.tonnage:'';
+  document.getElementById('f-tarif').value=prefill&&prefill.tarif?prefill.tarif:'';
+  document.getElementById('f-total').value=prefill&&totalVoyage(prefill)?totalVoyage(prefill):'';
+  document.getElementById('f-statut2').value=prefill&&prefill.statut?prefill.statut:'Livré';
+  document.getElementById('f-client').value=prefill&&prefill.client?prefill.client:'';
+  document.getElementById('f-notes').value=prefill&&prefill.notes?prefill.notes:'';
+  document.getElementById('tarif-transport-hint').classList.remove('show');
+  document.getElementById('tarif-mat-hint').classList.remove('show');
+  document.getElementById('mat-dl').innerHTML=matricules.map(function(m){return'<option value="'+m.matricule+'">'}).join('');
+  if(prefill&&prefill.destination)updateTransportHint();
+  if(prefill&&prefill.marchandise)updateMarchHint();
+  showModal('modal-voyage');
+}
+function editVoyage(id){
+  var v=voyages.find(function(x){return x.id===id});
+  if(v)openVoyageModal(v);
+}
+function validateTruckTonnage(){
+  var tonnage=Number(document.getElementById('f-tonnage').value||0),
+      type=document.getElementById('f-camtype').value;
+  if(type==='10 Roues'&&(tonnage<0||tonnage>25)){alert('10 Roues : 0 à 25t');return false}
+  if(type==='12 Roues'&&(tonnage<25||tonnage>30)){alert('12 Roues : 25 à 30t');return false}
+  if(type==='Semi-Remorque'&&(tonnage<30||tonnage>45)){alert('Semi-Remorque : 30 à 45t');return false}
+  return true;
+}
+async function saveVoyage(){
+  var mat=normalizeMat(document.getElementById('f-mat').value),
+      date=document.getElementById('f-date').value,
+      dest=document.getElementById('f-dest').value,
+      marc=document.getElementById('f-march').value.trim();
+  if(!date||!mat||!dest||!marc){addNotification('error','Champs manquants','Veuillez remplir les champs obligatoires');return}
+  var registeredTruck=matricules.find(function(m){return normalizeMat(m.matricule)===mat});
+  var truckType=registeredTruck&&registeredTruck.type?registeredTruck.type:document.getElementById('f-camtype').value;
+  document.getElementById('f-camtype').value=truckType;
+  if(!validateTruckTonnage())return;
+  if(editId){
+    var old=voyages.find(function(v){return v.id===editId});
+    if(old&&old.statut==='Livré'&&document.getElementById('f-statut2').value==='En cours'){addNotification('warning','Action impossible',"Impossible de repasser un voyage de 'Livré' à 'En cours'");return}
+  }
+  var obj={id:editId||Date.now().toString(),num:editId?(function(){var x=voyages.find(function(v){return v.id===editId});return x&&x.num?x.num:genNum()})():genNum(),date:date,matricule:mat,type:truckType,destination:dest,marchandise:marc,prixMat:document.getElementById('f-prix-mat').value,tonnage:document.getElementById('f-tonnage').value,tarif:document.getElementById('f-tarif').value,statut:document.getElementById('f-statut2').value,client:document.getElementById('f-client').value.trim(),notes:document.getElementById('f-notes').value.trim()};
+  setSync('Sauvegarde...');
+  if(!(await upsertVoyage(obj))){setSync('Erreur');addNotification('error','Échec','Impossible de sauvegarder le voyage');return}
+  var i=voyages.findIndex(function(v){return v.id===obj.id});
+  if(i>=0)voyages[i]=obj;else voyages.push(obj);
+  saveCache();
+  setSync(offlineMode?'Mode hors-ligne':'Connecté');
+  if(offlineMode) addNotification('warning','Mode hors-ligne','Enregistré localement (iPhone). Ouvre via HTTPS pour synchroniser.');
+  addNotification('success','Voyage enregistré',obj.num+' - '+obj.destination);
+  hideModal('modal-voyage');renderTable();
+}
+async function delVoyage(id){
+  if(!confirm('Supprimer ce voyage ?'))return;
+  setSync('Suppression...');
+  if(!(await removeVoyage(id))){setSync('Erreur');addNotification('error','Échec','Suppression impossible');return}
+  voyages=voyages.filter(function(v){return v.id!==id});
+  saveCache();
+  setSync(offlineMode?'Mode hors-ligne':'Connecté');
+  if(offlineMode) addNotification('warning','Mode hors-ligne','Suppression faite localement (non synchronisée).');
+  addNotification('info','Voyage supprimé','Le voyage a été retiré');
+  renderTable();
+}
+
+// === DETAILS & RECEIPT ===
+function dRow(l,v){return'<div style="background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px"><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">'+l+'</div><div style="font-size:12px;font-weight:500">'+v+'</div></div>'}
+function viewDetail(id){
+  var v=voyages.find(function(x){return x.id===id});if(!v)return;
+  var hist=voyages.filter(function(x){return normalizeMat(x.matricule)===normalizeMat(v.matricule)});
+  var caM=hist.filter(function(x){return x.statut==='Livré'}).reduce(function(a,x){return a+totalVoyage(x)},0);
+  var ton=Number(v.tonnage||0);
+  var mCost=matCost(v);
+  var unitMat=ton>0&&mCost?Math.round(mCost/ton):Number(v.prixMat||0);
+  document.getElementById('detail-body').innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+dRow('Réf.',v.num||'—')+dRow('Date',fmtDate(v.date))+dRow('Matricule','<span style="color:var(--text-primary);font-family:var(--font-mono);font-size:14px">'+(v.matricule||'—')+'</span>')+dRow('Type',typeTag(v.type))+dRow('Destination',v.destination||'—')+dRow('Marchandise','<strong>'+(v.marchandise||'—')+'</strong>')+dRow('Tonnage',v.tonnage?v.tonnage+' t':'—')+dRow('Prix/t',unitMat?fmtFCFA(unitMat)+'/t':'—')+dRow('Total','<span style="font-weight:600">'+fmtFCFA(totalVoyage(v))+'</span>')+dRow('Client',v.client||'—')+dRow('Statut',statutTag(v.statut))+'<div style="grid-column:1/-1;background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px">Historique '+(v.matricule||'')+' : <strong>'+hist.length+'</strong> voyage(s) · CA : <strong style="color:var(--success)">'+fmtFCFA(caM)+'</strong></div></div>';
+  showModal('modal-detail');
+}
+function openReceipt(id){
+  var v=voyages.find(function(x){return x.id===id});if(!v)return;
+  var isLivre=v.statut==='Livré',total=totalVoyage(v);
+  var ton=Number(v.tonnage||0);
+  var montantMat=matCost(v);
+  var unitMat=ton>0&&montantMat?Math.round(montantMat/ton):null;
+  var unitTransport=ton>0?Math.round(Number(v.tarif||0)/ton):null;
+  document.getElementById('receipt-modal-title').textContent=isLivre?'REÇU DE LIVRAISON':'BON DE TRANSPORT';
+  document.getElementById('receipt-printable').innerHTML='<div><div class="rcpt-header"><div><div class="rcpt-brand">GDCI</div><div style="font-size:11px;color:#64748b;margin-top:2px">Transport & Logistique</div></div><div class="rcpt-meta"><div class="rcpt-title">'+(isLivre?'Reçu':'Bon')+'</div><div style="font-family:var(--font-mono);font-size:11px;color:#64748b;margin-top:4px">'+(v.num||'—')+'</div><div style="font-size:10px;color:#94a3b8;margin-top:2px">'+fmtDate(today())+'</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px"><div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:12px"><div style="font-size:9px;text-transform:uppercase;color:#64748b;margin-bottom:6px;font-weight:600">Transport</div><div style="font-size:12px;margin-bottom:4px"><strong>Date :</strong> '+fmtDate(v.date)+'</div><div style="font-size:12px;margin-bottom:4px"><strong>Matricule :</strong> '+(v.matricule||'—')+'</div><div style="font-size:12px"><strong>Type :</strong> '+(v.type||'—')+'</div></div><div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:12px"><div style="font-size:9px;text-transform:uppercase;color:#64748b;margin-bottom:6px;font-weight:600">Client</div><div style="font-size:12px;margin-bottom:4px"><strong>Client :</strong> '+(v.client||'—')+'</div><div style="font-size:12px;margin-bottom:4px"><strong>Destination :</strong> '+(v.destination||'—')+'</div><div style="font-size:12px"><strong>Marchandise :</strong> '+(v.marchandise||'—')+'</div></div></div><table class="rcpt-table"><thead><tr><th>Désignation</th><th>Tonnage</th><th>Prix / tonne</th><th style="text-align:right">Montant</th></tr></thead><tbody><tr><td>Transport — <strong>'+(v.marchandise||'marchandise')+'</strong></td><td>'+(v.tonnage||'—')+' t</td><td>'+(unitTransport?fmtFCFA(unitTransport)+'/t':'—')+'</td><td style="text-align:right">'+fmtFCFA(v.tarif)+'</td></tr>'+(montantMat?'<tr><td>Fourniture — <strong>'+(v.marchandise||'')+'</strong></td><td>'+(v.tonnage||'—')+' t</td><td>'+(unitMat?fmtFCFA(unitMat)+'/t':'—')+'</td><td style="text-align:right">'+fmtFCFA(montantMat)+'</td></tr>':'')+'<tr class="total-row"><td colspan="3" style="text-align:right">TOTAL</td><td style="text-align:right">'+fmtFCFA(total)+'</td></tr></tbody></table><div style="border-top:1px solid #e2e8f0;padding-top:12px;display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;-webkit-align-items:flex-end;align-items:flex-end"><div style="font-size:9px;color:#94a3b8;max-width:220px;font-style:italic">'+(isLivre?'Reçu officiel GDCI':'Bon de transport GDCI')+'</div><div style="display:-webkit-flex;display:flex;gap:24px"><div style="text-align:center"><div style="width:120px;border-top:1px solid #cbd5e1;margin:24px auto 4px"></div><div style="font-size:9px;color:#64748b;text-transform:uppercase">Chauffeur</div></div><div style="text-align:center"><div style="width:120px;border-top:1px solid #cbd5e1;margin:24px auto 4px"></div><div style="font-size:9px;color:#64748b;text-transform:uppercase">Client</div></div></div></div></div>';
+  showModal('modal-receipt');
+}
+function printReceipt(){window.print()}
+function printBareme(){window.print()}
+
+// === STATS ===
+function setPeriod(p,btn){statPeriod=p;document.querySelectorAll('.ptab').forEach(function(b){b.classList.remove('active')});btn.classList.add('active');renderStats()}
+function renderStats(){
+  var arr=filterP(voyages,statPeriod),grid=document.getElementById('charts-grid'),
+      byM={},byD={},byMat={},byT={'10 Roues':0,'12 Roues':0,'Semi-Remorque':0};
+  arr.forEach(function(v){if(v.marchandise)byM[v.marchandise]=(byM[v.marchandise]||0)+1;if(v.destination)byD[v.destination]=(byD[v.destination]||0)+1;if(v.matricule)byMat[v.matricule]=(byMat[v.matricule]||0)+1;if(byT[v.type]!==undefined)byT[v.type]++});
+  function top(o,n){n=n||6;return Object.entries(o).sort(function(a,b){return b[1]-a[1]}).slice(0,n)}
+  var livres=arr.filter(function(v){return v.statut==='Livré'}).length;
+  var ca=arr.filter(function(v){return v.statut==='Livré'}).reduce(function(a,v){return a+totalVoyage(v)},0);
+  var tons=arr.reduce(function(a,v){return a+Number(v.tonnage||0)},0);
+  function bar(title,data,color){var max=data[0]?data[0][1]:1;return'<div class="chart-card"><div class="chart-ttl">'+title+'</div>'+(data.length?data.map(function(item){return'<div class="bar-row"><div class="bar-lbl" title="'+item[0]+'">'+item[0]+'</div><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(item[1]/max*100)+'%;background:'+color+'"></div></div><div class="bar-n">'+item[1]+'</div></div>'}).join(''):'<div style="color:var(--text-muted);font-size:11px">Aucune donnée</div>')+'</div>'}
+  grid.innerHTML='<div class="chart-card"><div class="chart-ttl">Résumé</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Voyages</div><div style="font-size:28px;font-weight:700;color:var(--text-primary)">'+arr.length+'</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Livrés</div><div style="font-size:28px;font-weight:700;color:var(--success)">'+livres+'</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Tonnage</div><div style="font-size:20px;font-weight:600;color:var(--text-secondary)">'+tons.toFixed(1)+' t</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">CA livré</div><div style="font-size:18px;font-weight:700;color:var(--accent)">'+fmtCompactFCFA(ca)+'</div></div></div></div>'+bar('Marchandises',top(byM),'var(--accent)')+bar('Destinations',top(byD),'var(--accent)')+bar('Camions',top(byMat),'var(--accent)')+bar('Types',Object.entries(byT),'var(--accent)');
+}
+
+// === TARIFS ===
+var editTarifDest=null;
+async function loadTarifs(){
+  try{
+    var result=await db.from('gdci_tarifs').select('*');
+    if(!result.error&&result.data&&result.data.length){
+      TARIFS_TRANSPORT={};
+      result.data.forEach(function(r){TARIFS_TRANSPORT[r.destination]={'10 Roues':r.tarif_10r,'12 Roues':r.tarif_12r,'Semi-Remorque':r.tarif_sr}});
+    }
+  }catch(e){}
+}
+async function upsertTarif(dest,t10r,t12r,tsr){
+  try{
+    var ex=await db.from('gdci_tarifs').select('id').eq('destination',dest.trim()).maybeSingle();
+    var payload={destination:dest.trim(),tarif_10r:Number(t10r)||0,tarif_12r:Number(t12r)||0,tarif_sr:Number(tsr)||0,updated_at:new Date().toISOString()};
+    var result=ex.data&&ex.data.id?await db.from('gdci_tarifs').update(payload).eq('id',ex.data.id):await db.from('gdci_tarifs').insert(payload);
+    return!result.error;
+  }catch(e){return false}
+}
+async function removeTarif(dest){var r=await db.from('gdci_tarifs').delete().eq('destination',dest);return!r.error}
+function openTarifModal(dest){
+  editTarifDest=dest||null;
+  document.getElementById('tarif-modal-title').textContent=dest?'MODIFIER TARIF':'NOUVEAU TARIF';
+  var t=dest?TARIFS_TRANSPORT[dest]:{};
+  document.getElementById('t-dest').value=dest||'';
+  document.getElementById('t-dest').readOnly=!!dest;
+  document.getElementById('t-10r').value=t&&t['10 Roues']?t['10 Roues']:'';
+  document.getElementById('t-12r').value=t&&t['12 Roues']?t['12 Roues']:'';
+  document.getElementById('t-sr').value=t&&t['Semi-Remorque']?t['Semi-Remorque']:'';
+  showModal('modal-tarif');
+}
+async function saveTarif(){
+  var dest=(document.getElementById('t-dest').value||'').trim();
+  var t10r=Number(document.getElementById('t-10r').value||0);
+  var t12r=Number(document.getElementById('t-12r').value||0);
+  var tsr=Number(document.getElementById('t-sr').value||0);
+  if(!dest||!t10r||!t12r||!tsr){addNotification('warning','Champs requis','Tous les tarifs sont obligatoires');return}
+  setSync('Sauvegarde...');
+  if(!(await upsertTarif(dest,t10r,t12r,tsr))){setSync('Erreur');addNotification('error','Échec','Impossible de sauvegarder');return}
+  TARIFS_TRANSPORT[dest]={'10 Roues':t10r,'12 Roues':t12r,'Semi-Remorque':tsr};
+  setSync('Connecté');addNotification('success','Tarif mis à jour',dest);hideModal('modal-tarif');renderTarifs();
+}
+async function delTarif(dest){
+  if(!confirm('Supprimer le tarif pour "'+dest+'" ?'))return;
+  setSync('Suppression...');
+  if(!(await removeTarif(dest))){setSync('Erreur');addNotification('error','Échec','Suppression impossible');return}
+  delete TARIFS_TRANSPORT[dest];setSync('Connecté');addNotification('info','Tarif supprimé',dest);renderTarifs();
+}
+function renderTarifs(){
+  var fmt=function(n){return Number(n).toLocaleString('fr-FR')};
+  document.getElementById('tarif-dest-tbody').innerHTML=Object.entries(TARIFS_TRANSPORT).map(function(entry){
+    var dest=entry[0],prix=entry[1];
+    return'<tr><td style="font-weight:500">'+dest+'</td><td>'+fmt(prix['10 Roues'])+'</td><td>'+fmt(prix['12 Roues'])+'</td><td>'+fmt(prix['Semi-Remorque'])+'</td><td><div style="display:flex;gap:4px"><button class="icon-btn" onclick="openTarifModal(\''+dest+'\')">✏</button><button class="icon-btn" onclick="delTarif(\''+dest+'\')" style="color:var(--danger)">✕</button></div></td></tr>';
+  }).join('');
+  var mats=Object.entries(PRIX_MATERIAUX);
+  document.getElementById('tarif-mat-grid').innerHTML=mats.map(function(entry,i){
+    var mat=entry[0],prix=entry[1];
+    return'<div style="padding:6px 10px;font-size:11px;border-bottom:1px solid var(--border);'+(i%2===1?'border-left:1px solid var(--border)':'')+'"><div style="color:var(--text-muted);font-size:9px;margin-bottom:2px">'+mat+'</div><div style="color:var(--text-primary);font-weight:600;font-family:var(--font-mono)">'+fmt(prix)+' FCFA</div></div>';
+  }).join('');
+}
+
+// === MATRICULES ===
+function openMatriculeModal(){['m-mat','m-nom','m-tel'].forEach(function(id){document.getElementById(id).value=''});showModal('modal-mat')}
+async function saveMatricule(){
+  var mat=normalizeMat(document.getElementById('m-mat').value),
+      nom=document.getElementById('m-nom').value.trim(),
+      tel=document.getElementById('m-tel').value.trim();
+  if(!mat||!nom||!tel){addNotification('warning','Champs requis','Veuillez remplir tous les champs');return}
+  if(matricules.find(function(m){return normalizeMat(m.matricule)===mat})){addNotification('warning','Doublon','Ce matricule existe déjà');return}
+  var obj={id:Date.now().toString(),matricule:mat,nom:nom,tel:tel};
+  setSync('Sauvegarde...');
+  if(!(await upsertMat(obj))){setSync('Erreur');addNotification('error','Échec','Impossible d\'enregistrer');return}
+  matricules.push(obj);
+  saveCache();
+  setSync(offlineMode?'Mode hors-ligne':'Connecté');
+  if(offlineMode) addNotification('warning','Mode hors-ligne','Camion enregistré localement (non synchronisé).');
+  addNotification('success','Camion ajouté',mat);
+  hideModal('modal-mat');renderMats();
+}
+async function delMat(id){
+  if(!confirm('Supprimer ce matricule ?'))return;
+  setSync('Suppression...');
+  if(!(await removeMat(id))){setSync('Erreur');addNotification('error','Échec','Suppression impossible');return}
+  matricules=matricules.filter(function(m){return m.id!==id});
+  saveCache();
+  setSync(offlineMode?'Mode hors-ligne':'Connecté');
+  if(offlineMode) addNotification('warning','Mode hors-ligne','Suppression faite localement (non synchronisée).');
+  addNotification('info','Camion supprimé');renderMats();
+}
+function renderMats(){
+  var tb=document.getElementById('mat-tbody');
+  var q=(document.getElementById('mat-search')?document.getElementById('mat-search').value:'')||'';
+  q=String(q).trim().toLowerCase();
+  var list=q?matricules.filter(function(m){
+    var a=String(m.matricule||'').toLowerCase();
+    var b=String(m.nom||'').toLowerCase();
+    var c=String(m.tel||'').toLowerCase();
+    return a.indexOf(q)!==-1||b.indexOf(q)!==-1||c.indexOf(q)!==-1;
+  }):matricules;
+
+  if(!matricules.length){tb.innerHTML='<tr><td colspan="6"><div class="empty-state"><p>Aucun camion</p></div></td></tr>';return}
+  if(q && !list.length){tb.innerHTML='<tr><td colspan="6"><div class="empty-state"><p>Aucun résultat pour \"'+q+'\"</p></div></td></tr>';return}
+  var mob=window.innerWidth<=768;
+  if(mob){
+    tb.innerHTML=list.map(function(m){
+      var voy=voyages.filter(function(v){return normalizeMat(v.matricule)===normalizeMat(m.matricule)});
+      var last=voy.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))})[0];
+      return'<tr style="display:block;background:var(--surface);border-bottom:2px solid var(--border)"><td style="display:block;padding:12px"><div style="display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;-webkit-align-items:center;align-items:center;margin-bottom:8px"><strong style="font-family:var(--font-mono);font-size:15px;color:var(--text-primary)">'+m.matricule+'</strong><button class="icon-btn" onclick="delMat(\''+m.id+'\')" style="padding:6px 10px;color:var(--danger)">✕</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Chauffeur</div><div style="font-size:12px;font-weight:500">'+(m.nom||'—')+'</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Téléphone</div><div style="font-size:12px;font-family:var(--font-mono)">'+(m.tel||'—')+'</div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Voyages</div><div style="margin-top:4px"><span class="tag tag-livre">'+voy.length+'</span></div></div><div><div style="font-size:9px;color:var(--text-muted);text-transform:uppercase">Dernier</div><div style="font-size:11px;font-family:var(--font-mono);color:var(--text-muted)">'+(last?fmtDate(last.date):'—')+'</div></div></div></td></tr>';
+    }).join('');
+    return;
+  }
+  tb.innerHTML=list.map(function(m){
+    var voy=voyages.filter(function(v){return normalizeMat(v.matricule)===normalizeMat(m.matricule)});
+    var last=voy.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))})[0];
+    return'<tr><td><strong style="color:var(--text-primary)">'+m.matricule+'</strong></td><td style="font-weight:500">'+(m.nom||'—')+'</td><td class="mono">'+(m.tel||'—')+'</td><td><span class="tag tag-livre">'+voy.length+'</span></td><td class="mono">'+(last?fmtDate(last.date):'—')+'</td><td><button class="icon-btn" onclick="delMat(\''+m.id+'\')" style="color:var(--danger)">✕</button></td></tr>';
+  }).join('');
+}
+
+// === EXPORT ===
+function exportCSV(){
+  var arr=getFiltered();
+  var cols=['Réf','Date','Matricule','Type','Destination','Marchandise','Tonnage','Prix mat/t','Tarif','Total','Client','Statut','Notes'];
+  var cell=function(x){return'"'+String(x||'').replace(/"/g,'""')+'"'};
+  var rows=arr.map(function(v){return[v.num,v.date,v.matricule,v.type,v.destination,v.marchandise,v.tonnage,v.prixMat,v.tarif,totalVoyage(v)||'',v.client,v.statut,v.notes].map(cell).join(',')});
+  var a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent([cols.join(',')].concat(rows).join('\n'));
+  a.download='GDCI_voyages_'+today()+'.csv';
+  a.click();
+}
+
+// === SUPABASE CRUD ===
+function voyageToDb(v){return{id:v.id,num:v.num,date:v.date,matricule:v.matricule,type:v.type,destination:v.destination,marchandise:v.marchandise,prix_mat:Number(v.prixMat||0),tonnage:Number(v.tonnage||0),tarif:Number(v.tarif||0),statut:v.statut,client:v.client||'',notes:v.notes||'',updated_at:new Date().toISOString()}}
+function voyageFromDb(v){return{id:v.id,num:v.num,date:v.date,matricule:v.matricule,type:v.type,destination:v.destination,marchandise:v.marchandise,prixMat:v.prix_mat,tonnage:v.tonnage,tarif:v.tarif,statut:v.statut,client:v.client,notes:v.notes,updatedAt:v.updated_at||v.created_at||''}}
+function matFromDb(m){return{id:m.id,matricule:m.matricule,nom:m.nom||m.chauffeur||m.nom_chauffeur||'',tel:m.tel||m.numero||m.numéro||m.telephone||m.téléphone||'',type:m.type||'',obs:m.obs||m.observations||'',updatedAt:m.updated_at||m.created_at||''}}
+
+async function loadData(){
+  setSync('Chargement...');
+  // Toujours charger le cache d'abord (permet à l'app de s'afficher même si Supabase échoue sur iPhone)
+  loadCache();
+  renderTable(); renderMats();
+
+  // Si la page est ouverte en file:// sur iPhone, la connexion peut être bloquée (origin "null")
+  if(location && location.protocol === 'file:'){
+    offlineMode = true;
+    setSync('Mode hors-ligne');
+    addNotification('warning','iPhone','Ouvre la page via un lien HTTPS (pas depuis un fichier) pour connecter la base.');
+    return;
+  }
+
+  if(!db){
+    offlineMode = true;
+    setSync('Mode hors-ligne');
+    return;
+  }
+
+  try{
+    offlineMode = false;
+    // Timeout simple: si iPhone bloque/ralentit, on bascule en cache
+    var timeout = function(ms){return new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'))},ms)})};
+    var req = Promise.all([
+      db.from('gdci_voyages').select('*').order('date',{ascending:false}),
+      db.from('gdci_matricules').select('*').order('matricule',{ascending:true})
+    ]);
+    var results = await Promise.race([req, timeout(12000)]);
+    var vr=results[0],mr=results[1];
+    if(vr.error||mr.error){throw (vr.error||mr.error)}
+    voyages=(vr.data||[]).map(voyageFromDb).sort(function(a,b){return String(b.date).localeCompare(String(a.date))});
+    matricules=(mr.data||[]).map(matFromDb).sort(function(a,b){return String(a.matricule).localeCompare(String(b.matricule))});
+    await loadTarifs();
+    saveCache();
+    setSync('Connecté');
+    renderTable(); renderMats();
+  }catch(e){
+    console.error('loadData error:',e);
+    offlineMode = true;
+    setSync('Mode hors-ligne');
+    // Message plus clair iPhone
+    var msg = (String(e && (e.message||e))==='timeout')
+      ? 'Connexion trop lente/ bloquée. Données affichées depuis le cache.'
+      : 'Impossible de joindre la base. Données affichées depuis le cache.';
+    addNotification('warning','Connexion', msg);
+    renderTable(); renderMats();
+  }
+}
+
+async function upsertVoyage(v){
+  if(!db){offlineMode=true;return true;}
+  try{
+    var r=await db.from('gdci_voyages').upsert(voyageToDb(v));
+    if(r.error){console.error(r.error);offlineMode=true;return true}
+    offlineMode=false;
+    return true;
+  }catch(e){console.error('upsertVoyage error:',e);offlineMode=true;return true}
+}
+async function removeVoyage(id){
+  if(!db){offlineMode=true;return true;}
+  try{
+    var r=await db.from('gdci_voyages').delete().eq('id',id);
+    if(r.error){console.error(r.error);offlineMode=true;return true}
+    offlineMode=false;
+    return true;
+  }catch(e){console.error('removeVoyage error:',e);offlineMode=true;return true}
+}
+async function upsertMat(m){
+  if(!db){offlineMode=true;return true;}
+  try{
+    var payloads=[{matricule:m.matricule,type:m.type||'10 Roues',nom:m.nom||'',tel:m.tel||'',updated_at:new Date().toISOString()},{matricule:m.matricule,type:m.type||'10 Roues',chauffeur:m.nom||'',numero:m.tel||'',updated_at:new Date().toISOString()}];
+    var ex=await db.from('gdci_matricules').select('id').eq('matricule',m.matricule).maybeSingle();
+    for(var i=0;i<payloads.length;i++){
+      var r=ex.data&&ex.data.id?await db.from('gdci_matricules').update(payloads[i]).eq('id',ex.data.id):await db.from('gdci_matricules').insert(payloads[i]);
+      if(!r.error){offlineMode=false;return true}
+    }
+    offlineMode=true;
+    return true;
+  }catch(e){console.error('upsertMat error:',e);offlineMode=true;return true}
+}
+async function removeMat(id){
+  if(!db){offlineMode=true;return true;}
+  try{
+    var r=await db.from('gdci_matricules').delete().eq('id',id);
+    if(r.error){console.error(r.error);offlineMode=true;return true}
+    offlineMode=false;
+    return true;
+  }catch(e){console.error('removeMat error:',e);offlineMode=true;return true}
+}
+
+// FIX iOS: sécuriser system color scheme listener
+if(window.matchMedia){
+  var mql = window.matchMedia('(prefers-color-scheme: dark)');
+  var handler = function(){
+    if(currentTheme==='auto')applyTheme();
+  };
+  // Safari iOS anciens: addListener/removeListener au lieu de addEventListener
+  if(mql && typeof mql.addEventListener === 'function') mql.addEventListener('change', handler);
+  else if(mql && typeof mql.addListener === 'function') mql.addListener(handler);
+}
+
+// === INIT ===
+var __booted = false;
+function boot(force){
+  if(__booted && !force) return;
+  __booted = true;
+  applyTheme();
+  updateNotifBadge();
+  renderNotifications();
+  var ok = initSupabase();
+  if(!ok){
+    // On affiche quand même l'app via le cache (utile sur iPhone).
+    var hint = (location && location.protocol === 'file:')
+      ? 'Ouvre la page via un lien HTTPS (pas depuis un fichier) pour connecter la base.'
+      : 'Vérifie la connexion internet.';
+    addNotification('warning','Connexion', 'Base non initialisée. ' + hint);
+  }
+  loadData();
+}
+// iOS: DOMContentLoaded est plus fiable que window.load
+document.addEventListener('DOMContentLoaded', function(){ boot(false); });
+// iOS: quand la page revient du cache (bfcache)
+window.addEventListener('pageshow', function(e){ if(e && e.persisted) boot(true); });
+
+window.addEventListener('scroll',hideDropdowns,{passive:true});
+</script>
+</body>
+</html>

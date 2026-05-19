@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>🚛 GDCI — Nouveau Voyage</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#3b82f6;--primary-dark:#2563eb;--primary-light:#dbeafe;
+  --success:#10b981;--warning:#f59e0b;--danger:#ef4444;
+  --bg:#f8fafc;--card:#fff;--surface-alt:#f1f5f9;--text:#0f172a;--text2:#64748b;
+  --border:#e2e8f0;--shadow:0 8px 30px -8px rgba(15,23,42,.12);--radius:14px;
+}
+[data-theme="dark"]{
+  --bg:#0f172a;--card:#1e293b;--surface-alt:#334155;--text:#f8fafc;--text2:#94a3b8;
+  --border:#334155;--primary:#60a5fa;--primary-dark:#3b82f6;--primary-light:#1e3a5f;
+  --shadow:0 8px 30px -8px rgba(0,0,0,.4);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;padding:20px;padding-top:calc(20px + env(safe-area-inset-top));
+  padding-bottom:env(safe-area-inset-bottom);transition:all .3s ease;
+  -webkit-font-smoothing:antialiased;
+}
+header{width:100%;max-width:600px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff}
+.brand-name{font-size:18px;font-weight:700}
+.brand-sub{font-size:11px;color:var(--text2)}
+.theme-btn{width:40px;height:40px;border-radius:10px;background:var(--card);border:1px solid var(--border);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;color:var(--text2)}
+.theme-btn:hover{border-color:var(--primary);color:var(--primary);transform:rotate(10deg)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;max-width:600px;width:100%;box-shadow:var(--shadow);animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card h1{font-size:20px;font-weight:700;margin-bottom:4px;letter-spacing:-.3px}
+.card p{color:var(--text2);font-size:13px;margin-bottom:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg.full{grid-column:1/-1}
+label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);font-weight:500}
+input,select,textarea{
+  background:var(--surface-alt);border:1px solid var(--border);border-radius:8px;
+  padding:10px 12px;color:var(--text);font-size:15px!important;font-family:inherit;
+  outline:none;transition:border .2s,background .2s;min-height:44px;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+input[readonly],select[readonly]{opacity:.8;cursor:not-allowed;background:var(--bg)}
+.hint{background:var(--primary-light);border-left:3px solid var(--primary);border-radius:0 8px 8px 0;padding:8px 10px;margin:8px 0;font-size:11px;color:var(--text)}
+[data-theme="dark"] .hint{background:#1e3a5f;color:#93c5fd}
+.total-box{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;
+  border-radius:10px;padding:14px;text-align:center;margin:12px 0 16px;
+  box-shadow:0 6px 20px -5px rgba(59,130,246,.3);
+}
+.total-label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;opacity:.9}
+.total-value{font-size:24px;font-weight:700;margin-top:4px}
+.btn{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;
+  border:none;border-radius:10px;padding:14px;width:100%;font-weight:600;font-size:15px;
+  cursor:pointer;transition:transform .2s,box-shadow .2s;min-height:48px;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 25px -8px rgba(59,130,246,.4)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-outline{background:transparent;border:2px solid var(--border);color:var(--text);margin-top:8px}
+.btn-outline:hover{background:var(--surface-alt)}
+.back-link{display:block;text-align:center;margin-top:12px;color:var(--primary);text-decoration:none;font-size:13px;font-weight:500}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--success);color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:500;box-shadow:0 8px 25px -5px rgba(16,185,129,.4);z-index:999;animation:slideIn .3s ease,slideOut .3s ease 2.5s forwards}
+@keyframes slideIn{from{opacity:0;transform:translate(-50%,15px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes slideOut{to{opacity:0;transform:translate(-50%,10px)}}
+@media(max-width:480px){
+  .form-grid{grid-template-columns:1fr;gap:10px}
+  .card{padding:16px;border-radius:12px}
+  h1{font-size:18px}
+  .total-value{font-size:22px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo">GDCI</div><div><div class="brand-name">GDCI</div><div class="brand-sub">Saisie rapide</div></div></div>
+  <button class="theme-btn" id="theme-toggle">🌓</button>
+</header>
+
+<main style="display:flex;justify-content:center">
+  <div class="card">
+    <h1>📋 Nouveau Voyage</h1>
+    <p>🧮 Le total se calcule automatiquement. Vous ne faites que saisir.</p>
+
+    <div class="form-grid">
+      <div class="fg"><label>📅 Date</label><input type="date" id="f-date"></div>
+      <div class="fg">
+        <label>🚛 Matricule *</label>
+        <select id="f-mat">
+          <option value="">— Choisir —</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>🔧 Type</label>
+        <select id="f-type"><option>10 Roues</option><option>12 Roues</option><option>Semi-Remorque</option></select>
+      </div>
+      <div class="fg">
+        <label>📍 Destination *</label>
+        <select id="f-dest">
+          <option value="">— Choisir —</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>🪨 Marchandise *</label>
+        <select id="f-march">
+          <option value="">— Choisir —</option>
+        </select>
+      </div>
+      <div class="fg"><label>⚖️ Tonnage (t) *</label><input type="number" id="f-ton" min="0" step="0.5" placeholder="Ex : 25"></div>
+      <div class="fg"><label>💵 Prix matériau/t (FCFA)</label><input type="number" id="f-prix" readonly placeholder="Auto"></div>
+      <div class="fg"><label>🚚 Tarif transport (FCFA)</label><input type="number" id="f-tarif" readonly placeholder="Auto"></div>
+      <div class="fg full"><label>👤 Client / Chantier</label><input type="text" id="f-client" placeholder="Nom ou lieu"></div>
+      <div class="fg full"><label>📝 Notes</label><textarea id="f-notes" placeholder="N° bon, observations..." rows="2"></textarea></div>
+    </div>
+
+    <div class="total-box">
+      <div class="total-label">💰 Total général</div>
+      <div class="total-value" id="total-display">0 FCFA</div>
+    </div>
+
+    <button class="btn" id="btn-save" onclick="saveVoyage()">✅ Enregistrer le voyage</button>
+    <button class="btn btn-outline" onclick="resetForm()">🔄 Nouveau formulaire</button>
+    <a href="index.html" class="back-link">← Retour à l'app GDCI</a>
+  </div>
+</main>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+// === CONFIG ===
+const SUPABASE_URL = 'https://fdkscnigeyrexbbvletr.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_p5xtjM1FBjQ2sfj709_rig_cOh41SOq';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// === DATA GDCI ===
+const TARIFS = {
+  'YAOU':{'10 Roues':110000,'12 Roues':120000,'Semi-Remorque':150000},
+  'Kaoukro':{'10 Roues':140000,'12 Roues':170000,'Semi-Remorque':190000},
+  'Bassam':{'10 Roues':80000,'12 Roues':100000,'Semi-Remorque':120000},
+  '8 Kilo':{'10 Roues':100000,'12 Roues':110000,'Semi-Remorque':180000},
+  'Modeste':{'10 Roues':85000,'12 Roues':100000,'Semi-Remorque':130000},
+  'Bonoua':{'10 Roues':120000,'12 Roues':130000,'Semi-Remorque':160000},
+  'Samo':{'10 Roues':130000,'12 Roues':140000,'Semi-Remorque':170000},
+  'Assinie':{'10 Roues':150000,'12 Roues':180000,'Semi-Remorque':200000},
+  'Adiaké':{'10 Roues':150000,'12 Roues':180000,'Semi-Remorque':200000},
+  'Aboisso':{'10 Roues':180000,'12 Roues':200000,'Semi-Remorque':250000},
+  'Assouindé':{'10 Roues':140000,'12 Roues':170000,'Semi-Remorque':180000},
+  'Moamé':{'10 Roues':130000,'12 Roues':160000,'Semi-Remorque':170000},
+  'Vitré 1':{'10 Roues':100000,'12 Roues':110000,'Semi-Remorque':140000},
+  'Vitré 2':{'10 Roues':120000,'12 Roues':130000,'Semi-Remorque':160000},
+  'Ananie':{'10 Roues':80000,'12 Roues':90000,'Semi-Remorque':130000},
+  'Grand Abidjan':{'10 Roues':80000,'12 Roues':90000,'Semi-Remorque':130000},
+  'Mondoukou':{'10 Roues':135000,'12 Roues':165000,'Semi-Remorque':180000}
+};
+
+const PRIX_MAT = {
+  'Sable 0/5':5500,'Sable 0/8':6000,'Gravillons 5/15':6300,'Gravillons 15/25':6300,
+  'Gravillons 5/25':6300,'Gravillons 14/20':6300,'Gravillons 4/10':8000,'Gravillons 10/14':6500,
+  'Concassé 0/31.5':6500,'Concassé 0/25':6500,'Concassé 0/15-0/20':6500,'Concassé 0/40':6500,
+  'Concassé 25/40':6500,'Concassé 25/80':7000,'Concassé 40/80':7000,'Concassé 61/150':7000,
+  'Moelons non triés':7000,'Moelons triés':8000,'Gravier':0,'Sable':0,'Latérite':0,
+  'Ciment':0,'Fer':0,'Bois':0,'Enrobé':0,'Terre rouge':0,'Autre':0
+};
+
+const MATRICULES = [
+  '10590WW','1066LS01','23851101','293b','3986KX01','4572401','510','586LE',
+  '595LL01','6188JA','9148FP01','AA104FY','AA148JA','AA364','AA364LT','AA364PJ',
+  'AA516AR','AA822YG','AA860LK','AA934LE','AA964BB01','AA977QK01',
+  'SANS-001','SANS-002','SANS-003','SANS-004','SANS-005','SANS-006','SANS-007',
+  'SANS-008','SANS-009','SANS-010','SANS-011','SANS-012','SANS-013','SANS-014',
+  'SANS-015','SANS-016','SANS-017','SANS-018','SANS-019','SANS-020','SANS-021',
+  'SANS-022','SANS-023','SANS-024','SANS-025','SANS-026','SANS-027','SANS-028',
+  'SANS-029','SANS-030','SANS-031','SANS-032','SANS-033','SANS-034','SANS-035',
+  'SANS-036','SANS-037','SANS-038','SANS-039','SANS-040','SANS-041','SANS-042',
+  'SANS-043','SANS-044','SANS-045','SANS-046','SANS-047','SANS-048','SANS-049',
+  'SANS-050','SANS-051','SANS-052','SANS-053','SANS-054','SANS-055','SANS-056',
+  'SANS-057','SANS-058','SANS-059','SANS-060','SANS-061','SANS-062'
+];
+
+// === INIT ===
+document.addEventListener('DOMContentLoaded', () => {
+  // Remplir les listes
+  document.getElementById('f-mat').innerHTML = '<option value="">— Choisir —</option>' + MATRICULES.map(m=>`<option value="${m}">${m}</option>`).join('');
+  document.getElementById('f-dest').innerHTML = '<option value="">— Choisir —</option>' + Object.keys(TARIFS).map(d=>`<option value="${d}">${d}</option>`).join('');
+  document.getElementById('f-march').innerHTML = '<option value="">— Choisir —</option>' + Object.keys(PRIX_MAT).map(m=>`<option value="${m}">${m}</option>`).join('');
+  
+  // Date par défaut
+  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+  
+  // Listeners auto-calc
+  ['f-type','f-dest','f-march','f-ton'].forEach(id => {
+    document.getElementById(id).addEventListener('change', updateCalc);
+    document.getElementById(id).addEventListener('input', updateCalc);
+  });
+  
+  applyTheme();
+});
+
+// === CALCUL AUTO ===
+function updateCalc() {
+  const dest = document.getElementById('f-dest').value;
+  const type = document.getElementById('f-type').value;
+  const march = document.getElementById('f-march').value;
+  const ton = parseFloat(document.getElementById('f-ton').value) || 0;
+  
+  // Prix auto
+  document.getElementById('f-prix').value = PRIX_MAT[march] || 0;
+  // Tarif auto
+  document.getElementById('f-tarif').value = (dest && TARIFS[dest]) ? TARIFS[dest][type] : 0;
+  
+  // Total auto
+  const prix = parseFloat(document.getElementById('f-prix').value) || 0;
+  const tarif = parseFloat(document.getElementById('f-tarif').value) || 0;
+  const total = (prix * ton) + tarif;
+  
+  document.getElementById('total-display').textContent = total > 0 ? total.toLocaleString('fr-FR') + ' FCFA' : '0 FCFA';
+}
+
+// === SAVE ===
+async function saveVoyage() {
+  const btn = document.getElementById('btn-save');
+  const date = document.getElementById('f-date').value;
+  const mat = document.getElementById('f-mat').value;
+  const dest = document.getElementById('f-dest').value;
+  const march = document.getElementById('f-march').value;
+  
+  if(!date || !mat || !dest || !march) {
+    toast('⚠️ Champs obligatoires manquants', 'error');
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.textContent = '⏳ Enregistrement...';
+  
+  try {
+    const payload = {
+      num: 'GDCI-' + Date.now().toString().slice(-6),
+      date, matricule: mat,
+      type: document.getElementById('f-type').value,
+      destination: dest, marchandise: march,
+      prix_mat: parseFloat(document.getElementById('f-prix').value) || 0,
+      tonnage: parseFloat(document.getElementById('f-ton').value) || 0,
+      tarif: parseFloat(document.getElementById('f-tarif').value) || 0,
+      statut: 'Livré',
+      client: document.getElementById('f-client').value.trim(),
+      notes: document.getElementById('f-notes').value.trim()
+    };
+    
+    const { error } = await db.from('gdci_voyages').insert(payload);
+    if(error) throw error;
+    
+    toast('✅ Voyage enregistré avec succès !');
+    setTimeout(resetForm, 1500);
+  } catch(e) {
+    console.error(e);
+    toast('❌ Erreur de connexion. Données sauvegardées localement.', 'error');
+    // Fallback localStorage
+    const local = JSON.parse(localStorage.getItem('gdci_pending_voyages') || '[]');
+    local.push({...payload, local: true, id: Date.now().toString()});
+    localStorage.setItem('gdci_pending_voyages', JSON.stringify(local));
+    setTimeout(resetForm, 1500);
+  }
+  btn.disabled = false;
+  btn.textContent = '✅ Enregistrer le voyage';
+}
+
+function resetForm() {
+  ['f-date','f-mat','f-dest','f-march','f-ton','f-client','f-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-prix').value = '';
+  document.getElementById('f-tarif').value = '';
+  document.getElementById('total-display').textContent = '0 FCFA';
+  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+}
+
+// === THEME ===
+let theme = localStorage.getItem('gdci_theme') || 'auto';
+function applyTheme(){
+  const d = matchMedia('(prefers-color-scheme:dark)').matches;
+  const t = theme==='auto'?(d?'dark':'light'):theme;
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('theme-toggle').textContent = t==='dark'?'☀️':'🌙';
+}
+document.getElementById('theme-toggle').onclick = () => {
+  theme = theme==='light'?'dark':theme==='dark'?'auto':'light';
+  localStorage.setItem('gdci_theme', theme);
+  applyTheme();
+};
+if(matchMedia) matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{if(theme==='auto')applyTheme()});
+
+// === TOAST ===
+function toast(msg, type='success'){
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.style.background = type==='error' ? 'var(--danger)' : 'var(--success)';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{if(t.parentElement)t.remove()}, 2500);
+}
+</script>
+</body>
+</html>

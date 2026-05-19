@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>GDCI — Registre Transport</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="brand-icon">GDCI</div>
+    <div><div class="brand-name">GDCI</div><div class="brand-sub">Transport & Logistique</div></div>
+  </div>
+  <div class="header-actions">
+    <span class="sync" id="sync-state">Connexion...</span>
+    <div class="header-stats">
+      <div class="hstat"><div class="hstat-val" id="hdr-today">0</div><div class="hstat-lbl">Auj.</div></div>
+      <div class="hstat"><div class="hstat-val" id="hdr-month">0</div><div class="hstat-lbl">Mois</div></div>
+      <div class="hstat"><div class="hstat-val" id="hdr-total">0</div><div class="hstat-lbl">Total</div></div>
+    </div>
+    <div style="position:relative">
+      <button class="icon-btn-header" id="theme-toggle" title="Mode sombre" aria-label="Changer le thème">🌓</button>
+      <div class="theme-dropdown" id="theme-dropdown">
+        <div class="theme-option" data-theme="light" data-action="set-theme"><span class="theme-icon">☀️</span> Mode clair</div>
+        <div class="theme-option" data-theme="dark" data-action="set-theme"><span class="theme-icon">🌙</span> Mode sombre</div>
+        <div class="theme-option" data-theme="auto" data-action="set-theme"><span class="theme-icon">🤖</span> Système</div>
+      </div>
+    </div>
+    <div style="position:relative">
+      <button class="icon-btn-header" id="notif-toggle" title="Notifications" aria-label="Notifications">
+        🔔<span class="badge" id="notif-badge" style="display:none">0</span>
+      </button>
+      <div class="notification-dropdown" id="notif-dropdown">
+        <div class="notification-header">
+          <span>Notifications</span>
+          <button class="btn btn-sm btn-ghost" data-action="mark-all-read">Tout lu</button>
+        </div>
+        <div class="notification-list" id="notif-list"></div>
+        <div class="notification-footer">
+          <button class="btn btn-sm btn-ghost" data-action="clear-notifications">Effacer</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-gold btn-sm" data-action="new-voyage">+ Nouveau</button>
+  </div>
+</header>
+
+<nav>
+  <button class="nav-btn active" data-action="show-tab" data-tab="historique">📋 Historique</button>
+  <button class="nav-btn" data-action="show-tab" data-tab="stats">📊 Statistiques</button>
+  <button class="nav-btn" data-action="show-tab" data-tab="tarifs">💰 Tarifs</button>
+  <button class="nav-btn" data-action="show-tab" data-tab="matricules">🚛 Matricules</button>
+</nav>
+
+<main>
+  <div id="tab-historique" class="tab-panel">
+    <div class="kpi-row" id="kpi-row"></div>
+    <div class="toolbar">
+      <input class="search-box" id="search" placeholder="🔍 Matricule, marchandise..." data-input="history-search">
+      <select class="sel" id="filter-type" data-change="filter-history"><option value="">Tous camions</option><option>10 Roues</option><option>12 Roues</option><option>Semi-Remorque</option></select>
+      <select class="sel" id="filter-statut" data-change="filter-history"><option value="">Tous statuts</option><option>Livré</option><option>En cours</option><option>En attente</option><option>Annulé</option></select>
+      <select class="sel" id="filter-period" data-change="filter-history"><option value="">Toute période</option><option value="today">Aujourd'hui</option><option value="week">Cette semaine</option><option value="month">Ce mois</option><option value="year">Cette année</option></select>
+      <select class="sel" id="page-size" data-change="page-size"><option value="10">10/page</option><option value="25">25/page</option><option value="50">50/page</option></select>
+      <button class="btn btn-ghost btn-sm" data-action="export-csv">📄 CSV</button>
+      <button class="btn btn-ghost btn-sm" data-action="load-data">↻</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>N°</th><th>Date</th><th>Matricule</th><th>Type</th><th>Destination</th><th>Marchandise</th><th>Tonnage</th><th>Total</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="tbody"></tbody></table>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <div id="tab-stats" class="tab-panel" style="display:none">
+    <div class="period-tabs">
+      <button class="ptab active" data-action="set-period" data-period="today">Aujourd'hui</button>
+      <button class="ptab" data-action="set-period" data-period="week">Semaine</button>
+      <button class="ptab" data-action="set-period" data-period="month">Ce mois</button>
+      <button class="ptab" data-action="set-period" data-period="year">Année</button>
+      <button class="ptab" data-action="set-period" data-period="all">Tout</button>
+    </div>
+    <div class="charts-grid" id="charts-grid"></div>
+  </div>
+
+  <div id="tab-tarifs" class="tab-panel" style="display:none">
+    <div class="toolbar" style="margin-bottom:16px">
+      <button class="btn btn-gold btn-sm" data-action="open-tarif">+ Destination</button>
+      <button class="btn btn-ghost btn-sm" data-action="print-bareme">🖨 Imprimer</button>
+    </div>
+    <div class="tarifs-grid">
+      <div class="tarif-card">
+        <div class="tarif-card-hdr">🚛 TARIFS PAR DESTINATION</div>
+        <table class="tarif-table"><thead><tr><th>Destination</th><th>10R</th><th>12R</th><th>SR</th><th></th></tr></thead><tbody id="tarif-dest-tbody"></tbody></table>
+      </div>
+      <div class="tarif-card">
+        <div class="tarif-card-hdr">⛏ PRIX MATÉRIAUX / TONNE</div>
+        <div id="tarif-mat-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-matricules" class="tab-panel" style="display:none">
+    <div class="toolbar">
+      <input class="search-box" id="mat-search" placeholder="🔍 Rechercher matricule, chauffeur, téléphone..." data-input="mat-search">
+      <button class="btn btn-gold btn-sm" data-action="open-matricule">+ Camion</button>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Matricule</th><th>Chauffeur</th><th>Téléphone</th><th>Voyages</th><th>Dernier</th><th>Actions</th></tr></thead><tbody id="mat-tbody"></tbody></table></div>
+  </div>
+</main>
+
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Modals -->
+<div class="overlay hidden" id="modal-voyage">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-ttl" id="voyage-modal-title">NOUVEAU VOYAGE</span><button class="cls" data-action="hide-modal" data-modal="modal-voyage">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg"><label>Date *</label><input type="date" id="f-date"></div>
+        <div class="fg"><label>Matricule *</label><input type="text" id="f-mat" placeholder="Ex : 1234 AB 01" list="mat-dl" data-input="sync-mat-type"><datalist id="mat-dl"></datalist></div>
+        <div class="fg"><label>Type</label><select id="f-camtype" data-change="transport-hint"><option>10 Roues</option><option>12 Roues</option><option>Semi-Remorque</option></select></div>
+        <div class="fg"><label>Destination *</label><select id="f-dest" data-change="transport-hint"><option value="">— Choisir —</option><option>Bassam</option><option>8 Kilo</option><option>Modeste</option><option>Bonoua</option><option>Samo</option><option>Assinie</option><option>Adiaké</option><option>Aboisso</option><option>Assouindé</option><option>Dokui</option><option>Moamé</option><option>Vitré 1</option><option>Vitré 2</option><option>Ananie</option><option>Grand Abidjan</option><option>Mondoukou</option></select></div>
+        <div class="fg full"><div id="tarif-transport-hint" class="tarif-hint"></div></div>
+        <div class="fg"><label>Tarif barème transport</label><input type="number" id="f-tarif-base" readonly min="0" style="background:var(--surface-alt);font-weight:600;cursor:not-allowed"></div>
+        <div class="fg"><label class="checkline"><input type="checkbox" id="f-neg-transport" data-change="negotiation-toggle"> Transport négocié</label><div class="mini-help">Coche si le prix final est différent du barème.</div></div>
+        <div class="fg"><label>Marchandise *</label><select id="f-march" data-change="march-hint"><option value="">— Choisir —</option><option>Sable 0/5</option><option>Sable 0/8</option><option>Gravillons 5/15</option><option>Gravillons 15/25</option><option>Gravillons 5/25</option><option>Gravillons 14/20</option><option>Gravillons 4/10</option><option>Gravillons 10/14</option><option>Concassé 0/31.5</option><option>Concassé 0/25</option><option>Concassé 0/15-0/20</option><option>Concassé 0/40</option><option>Concassé 25/40</option><option>Concassé 25/80</option><option>Concassé 40/80</option><option>Concassé 61/150</option><option>Moelons non triés</option><option>Moelons triés</option><option>Gravier</option><option>Sable</option><option>Latérite</option><option>Ciment</option><option>Fer</option><option>Bois</option><option>Enrobé</option><option>Terre rouge</option><option>Autre</option></select></div>
+        <div class="fg"><label>Prix barème / tonne</label><input type="number" id="f-prix-mat-base" readonly min="0" style="background:var(--surface-alt);font-weight:600;cursor:not-allowed"><div id="tarif-mat-hint" class="tarif-hint"></div></div>
+        <div class="fg"><label class="checkline"><input type="checkbox" id="f-neg-mat" data-change="negotiation-toggle"> Matériau négocié</label><div class="mini-help">Coche si le prix / tonne est négocié.</div></div>
+        <div class="fg"><label>Prix appliqué / tonne (FCFA)</label><input type="number" id="f-prix-mat" min="0" data-input="calc-total" style="background:var(--surface-alt);font-weight:600"></div>
+        <div class="fg"><label>Tonnage réel (t)</label><input type="number" id="f-tonnage" placeholder="Ex : 25" min="0" step="0.5" data-input="calc-total"><div style="font-size:10px;color:var(--text-muted);margin-top:4px">🚛 10R:0-25t · 12R:25-30t · SR:30-45t</div></div>
+        <div class="fg"><label>Tonnage facturé (t)</label><input type="number" id="f-tonnage-facture" placeholder="Par défaut = réel" min="0" step="0.5" data-input="calc-total"><div class="mini-help">Utilisé pour le calcul si négocié.</div></div>
+        <div class="fg"><label>Tarif transport appliqué (FCFA)</label><input type="number" id="f-tarif" min="0" data-input="calc-total" style="background:var(--surface-alt);font-weight:600;cursor:not-allowed"></div>
+        <div class="fg"><label>Total général (FCFA)</label><input type="number" id="f-total" readonly style="background:var(--surface-alt);font-weight:600"></div>
+        <div class="fg"><label>Statut</label><select id="f-statut2"><option>Livré</option><option>En cours</option><option>En attente</option><option>Annulé</option></select></div>
+        <div class="fg"><label>Client / Chantier</label><input type="text" id="f-client" placeholder="Nom du client"></div>
+        <div class="fg full"><label>Motif négociation</label><input type="text" id="f-motif-neg" placeholder="Ex : client fidèle, gros volume, arrangement..."></div>
+        <div class="fg full"><label>Bon de livraison / Notes</label><textarea id="f-notes" placeholder="N° bon, observations..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-ftr"><button class="btn btn-ghost btn-sm" data-action="hide-modal" data-modal="modal-voyage">Annuler</button><button class="btn btn-gold btn-sm" data-action="save-voyage">Enregistrer</button></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="modal-detail"><div class="modal"><div class="modal-hdr"><span class="modal-ttl">DÉTAIL DU VOYAGE</span><button class="cls" data-action="hide-modal" data-modal="modal-detail">✕</button></div><div class="modal-body" id="detail-body"></div><div class="modal-ftr"><button class="btn btn-ghost btn-sm" data-action="hide-modal" data-modal="modal-detail">Fermer</button></div></div></div>
+
+<div class="overlay hidden" id="modal-mat">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-hdr"><span class="modal-ttl">ENREGISTRER CAMION</span><button class="cls" data-action="hide-modal" data-modal="modal-mat">✕</button></div>
+    <div class="modal-body"><div class="form-grid"><div class="fg"><label>Matricule *</label><input type="text" id="m-mat" placeholder="1234 AB 01"></div><div class="fg"><label>Nom du chauffeur *</label><input type="text" id="m-nom" placeholder="Prénom Nom"></div><div class="fg full"><label>Numéro du chauffeur *</label><input type="tel" id="m-tel" placeholder="07 XX XX XX XX"></div></div></div>
+    <div class="modal-ftr"><button class="btn btn-ghost btn-sm" data-action="hide-modal" data-modal="modal-mat">Annuler</button><button class="btn btn-gold btn-sm" data-action="save-matricule">Enregistrer</button></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="modal-driver">
+  <div class="modal" style="max-width:900px">
+    <div class="modal-hdr"><span class="modal-ttl" id="driver-modal-title">CARNET CHAUFFEUR</span><button class="cls" data-action="hide-modal" data-modal="modal-driver">✕</button></div>
+    <div class="modal-body" id="driver-body"></div>
+    <div class="modal-ftr"><button class="btn btn-ghost btn-sm" data-action="hide-modal" data-modal="modal-driver">Fermer</button></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="modal-receipt">
+  <div class="modal" style="max-width:720px">
+    <div class="modal-hdr no-print"><span class="modal-ttl" id="receipt-modal-title">DOCUMENT TRANSPORT</span><div style="display:-webkit-flex;display:flex;gap:6px;-webkit-align-items:center;align-items:center"><button class="btn btn-gold btn-sm" data-action="print-receipt">🖨 PDF</button><button class="cls" data-action="hide-modal" data-modal="modal-receipt">✕</button></div></div>
+    <div class="modal-body" style="padding:0"><div id="receipt-printable"></div></div>
+    <div class="modal-ftr no-print"><button class="btn btn-ghost btn-sm" data-action="hide-modal" data-modal="modal-receipt">Fermer</button><button class="btn btn-gold btn-sm" data-action="print-receipt">🖨 Imprimer</button></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="modal-tarif">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-hdr"><span class="modal-ttl" id="tarif-modal-title">NOUVEAU TARIF</span><button class="cls" data-action="hide-modal" data-modal="modal-tarif">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg full"><label>Destination *</label><input type="text" id="t-dest" placeholder="Ex : Bassam"></div>
+        <div class="fg"><label>10 Roues</label><input type="number" id="t-10r" min="0" placeholder="90000"></div>
+        <div class="fg"><label>12 Roues</label><input type="number" id="t-12r" min="0" placeholder="100000"></div>
+        <div class="fg full"><label>Semi-Remorque</label><input type="number" id="t-sr" min="0" placeholder="120000"></div>
+      </div>
+    </div>
+    <div class="modal-ftr"><button class="btn btn-ghost btn-sm" data-action="hide-modal" data-modal="modal-tarif">Annuler</button><button class="btn btn-gold btn-sm" data-action="save-tarif">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- Scripts moved to /js -->
+<!-- Supabase SDK (fallback) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+        onerror="this.onerror=null;this.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js';"></script>
+
+<!-- App scripts (vanilla, découpés) -->
+<script defer src="js/config.js"></script>
+<script defer src="js/state.js"></script>
+<script defer src="js/utils.js"></script>
+<script defer src="js/calc.js"></script>
+<script defer src="js/notifications.js"></script>
+<script defer src="js/theme.js"></script>
+<script defer src="js/nav.js"></script>
+<script defer src="js/history.js"></script>
+<script defer src="js/voyage.js"></script>
+<script defer src="js/stats.js"></script>
+<script defer src="js/tarifs.js"></script>
+<script defer src="js/matricules.js"></script>
+<script defer src="js/export.js"></script>
+<script defer src="js/supabase.js"></script>
+<script defer src="js/events.js"></script>
+<script defer src="js/init.js"></script>
+</body>
+</html>
